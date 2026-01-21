@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\MobileUserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -13,6 +14,9 @@ Route::get('/hello', function (Request $request) {
         'value' => '55'
     ]);
 });
+
+// This maps the URL 'your-domain.com/api/register-mobile' to your controller method
+Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
 /*
 Route::post('/hello', function (Request $request) {

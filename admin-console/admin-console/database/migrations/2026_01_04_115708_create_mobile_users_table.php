@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('mobile_users', function (Blueprint $table) {
-            $table->id();
+            $table->id('mobile_user_id');
             $table->string('device_id')->unique(); // Tracking Unique device
             $table->string('fcm_token')->nullable(); // For sending emergency alerts
             // PostGIS implementation
