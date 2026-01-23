@@ -1,60 +1,27 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'providers/registration_provider.dart';
+import 'screens/registration_screen.dart';
 
-void main(){
-  runApp(MyApp());
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => RegistrationProvider()),
+      ],
+      child: const MonitusApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget{
-  const MyApp({super.key});
+class MonitusApp extends StatelessWidget {
+  const MonitusApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-  
-class _MyAppState extends State<MyApp>{
-  String greet = "Hello";
-  int value = 5;
-
-  @override
-    void initState(){
-      super.initState();
-      fetchGreeting();
-    }
-
-    Future<void> fetchGreeting() async{
-      final res = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/hello')
-      );
-
-      final data =jsonDecode(res.body);
-
-      setState(() {
-        greet = data['message'];
-        value = data['value'];
-      });
-    }
-
-  @override
-  Widget build(BuildContext context){
-    
+  Widget build(BuildContext context) {
     return MaterialApp(
-      home:Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-            Text(greet),
-            Text('$value'),
-          ]),
-        ),
-      ),
+      title: 'Monitus',
+      home: RegistrationScreen(),
     );
   }
-
 }
-  
-
-
-
