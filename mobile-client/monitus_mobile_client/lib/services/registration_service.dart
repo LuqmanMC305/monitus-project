@@ -6,22 +6,44 @@ import 'package:flutter/foundation.dart';
 
 class RegistrationService {
   // Replace with your local IP address (not localhost if using physical device)
-  final String _apiUrl = "http://192.168.0.196:8000/api/register-mobile";
+  //final String _apiUrl = "http://192.168.0.196:8000/api/register-mobile"; 
+
+  //TESTING FOR BROWSER MOCK DATA
+  final String _apiUrl = "http://127.0.0.1:8000/api/register-mobile"; 
 
   Future<void> registerUser() async {
     try {
-      // 1. Fetch the FCM Token
-      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      String? fcmToken;
+      double lat, lng;
       
-      // 2. Fetch the Current Location
-      Position position = await _determinePosition();
+      if(kIsWeb){
+        // BROWSER MOCK DATA
+        fcmToken = "web_mock_token_${DateTime.now().millisecondsSinceEpoch}";
+        lat = 4.1390; // Mock Latitude 
+        lng = 101.6869; // Mock Longitude
+        debugPrint("Web Mode: Using mock hardware data");
 
+      }
+      else{
+        // REAL MOBILE LOGIC
+
+        // 1. Fetch the FCM Token
+        fcmToken = await FirebaseMessaging.instance.getToken();
+
+        // 2. Fetch the Current Location
+        Position position = await _determinePosition();
+        lat = position.latitude;
+        lng = position.longitude;
+
+
+      }
+      
       // 3. Prepare the Data Package
       Map<String, dynamic> data = {
         'fcm_token': fcmToken,
         'device_id': 'mobile_device_001', // Ideally get a real unique ID (Hardcoded for now)
-        'latitude': position.latitude,
-        'longitude': position.longitude,
+        'latitude': lat,
+        'longitude': lng
       };
 
       // 4. Send to Laravel API
