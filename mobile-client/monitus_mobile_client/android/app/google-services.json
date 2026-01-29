@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "129456935260",
+    "project_id": "monitus-emergency-system",
+    "storage_bucket": "monitus-emergency-system.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129456935260:android:aad462e29f5b4bf95c3199",
+        "android_client_info": {
+          "package_name": "com.example.monitus_mobile_client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA6YbyJ2NQKeW2byE2ZJcnZGdxm-6FCV8I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

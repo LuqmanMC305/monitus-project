@@ -9,7 +9,7 @@ class RegistrationService {
   //final String _apiUrl = "http://192.168.0.196:8000/api/register-mobile"; 
 
   //TESTING FOR BROWSER MOCK DATA
-  final String _apiUrl = "http://127.0.0.1:8000/api/register-mobile"; 
+  final String _apiUrl = "http://192.168.0.195:8000/api/register-mobile"; 
 
   Future<void> registerUser() async {
     try {
