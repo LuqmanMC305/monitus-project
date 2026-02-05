@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\MobileUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 class MobileUserController extends Controller
 {
@@ -43,5 +45,41 @@ class MobileUserController extends Controller
                 'updated_at' => $user->last_location_at->toDateTimeString()
             ]
         ], 201);
+    }
+
+    public function sendAlert(Request $request)
+    {
+        // 1. Validation for incoming incident data
+        $validated = $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'radius' => 'required|numeric',
+        ]);
+
+        $latitude = $validated['latitude'];
+        $longitude = $validated['longitude'];
+        $radius = $validated['radius'];
+
+        // 2. Geo-Engine Logic
+        $nearbyUsers = MobileUser::select('fcm_token', 'device_id')
+        ->whereRaw("ST_DWithin(last_location, ST_GeomFromText('POINT(? ?)', 4326), ?)", [
+            $longitude, // PostGIS expects Longitude first
+            $latitude, 
+            $radius
+        ])
+        ->where('updated_at', '>=', now()->subMinutes(30))
+        ->get();
+
+        // Logging for Testing
+        Log::info("Geo-Engine found " . $nearbyUsers->count() . " users nearby.");
+
+        // 3. Return Success with JSON
+        return response()->json([
+        'status' => 'success',
+        'count' => $nearbyUsers->count(),
+        'tokens' => $nearbyUsers->pluck('fcm_token')
+    ]);
+
+
     }
 }

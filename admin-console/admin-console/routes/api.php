@@ -18,6 +18,9 @@ Route::get('/hello', function (Request $request) {
 // This maps the URL 'your-domain.com/api/register-mobile' to your controller method
 Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
+// Send Alert 
+Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
+
 /*
 Route::post('/hello', function (Request $request) {
     return response()->json([
