@@ -60,11 +60,17 @@ class MobileUserController extends Controller
         $longitude = $validated['longitude'];
         $radius = $validated['radius'];
 
-        // 2. Geo-Engine Logic
+        // 2. Prepare Well-Known Text (WKT) String First
+        $pointWkt = "POINT($longitude $latitude)";
+
+        // 3. Geo-Engine Logic (Query with Defined Parameters)
         $nearbyUsers = MobileUser::select('fcm_token', 'device_id')
-        ->whereRaw("ST_DWithin(last_location, ST_GeomFromText('POINT(? ?)', 4326), ?)", [
-            $longitude, // PostGIS expects Longitude first
-            $latitude, 
+        // Calculate distance of mobile client device from target 
+        ->selectRaw("ST_Distance(last_location::geography, ST_GeomFromText(?, 4326)::geography) as distance_in_metres", [
+        $pointWkt
+        ])
+        ->whereRaw("ST_DWithin(last_location, ST_GeomFromText(?, 4326), ?)", [
+            $pointWkt, // PostGIS expects Longitude first
             $radius
         ])
         ->where('updated_at', '>=', now()->subMinutes(30))
@@ -77,7 +83,7 @@ class MobileUserController extends Controller
         return response()->json([
         'status' => 'success',
         'count' => $nearbyUsers->count(),
-        'tokens' => $nearbyUsers->pluck('fcm_token')
+        'tokens' => $nearbyUsers // Changed from pluck('fcm_token') to the whole collection
     ]);
 
 
