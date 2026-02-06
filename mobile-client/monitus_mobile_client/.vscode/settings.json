@@ -1,3 +1,4 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "C:/Users/luqma/OneDrive/Documents/Y4S1/FYP (CAT404)/monitus-project/mobile-client/monitus_mobile_client/linux"
 }

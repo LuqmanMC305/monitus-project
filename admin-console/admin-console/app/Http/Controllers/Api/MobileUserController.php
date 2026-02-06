@@ -7,6 +7,7 @@ use App\Models\MobileUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\FCMService;
 
 
 class MobileUserController extends Controller
@@ -47,7 +48,7 @@ class MobileUserController extends Controller
         ], 201);
     }
 
-    public function sendAlert(Request $request)
+    public function sendAlert(Request $request, FCMService $fcmservice)
     {
         // 1. Validation for incoming incident data
         $validated = $request->validate([
@@ -79,12 +80,35 @@ class MobileUserController extends Controller
         // Logging for Testing
         Log::info("Geo-Engine found " . $nearbyUsers->count() . " users nearby.");
 
-        // 3. Return Success with JSON
+        /*
         return response()->json([
         'status' => 'success',
         'count' => $nearbyUsers->count(),
         'tokens' => $nearbyUsers // Changed from pluck('fcm_token') to the whole collection
-    ]);
+        ]);
+        */
+        
+        // 4. Prepare tokens for FCM
+        $tokens = $nearbyUsers->pluck('fcm_token')->filter()->toArray();
+        
+        $sentCount = 0;
+        if(!empty($tokens)){
+            $sentCount = $fcmservice->sendEmergencyAlert(
+            $tokens,
+            "EMERGENCY ALERTS",
+            "AN incident has been reported within {$radius} of your location."
+        );
+        }
+       
+
+        // 3. Return Success with JSON
+        return response()->json([
+            'status' => 'success',
+            'geo_engine_found' => $nearbyUsers->count(),
+            'notifications_sent' => $sentCount,
+            'users' => $nearbyUsers
+        ]);
+
 
 
     }
