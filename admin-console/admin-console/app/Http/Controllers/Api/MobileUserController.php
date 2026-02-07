@@ -79,15 +79,7 @@ class MobileUserController extends Controller
 
         // Logging for Testing
         Log::info("Geo-Engine found " . $nearbyUsers->count() . " users nearby.");
-
-        /*
-        return response()->json([
-        'status' => 'success',
-        'count' => $nearbyUsers->count(),
-        'tokens' => $nearbyUsers // Changed from pluck('fcm_token') to the whole collection
-        ]);
-        */
-        
+  
         // 4. Prepare tokens for FCM
         $tokens = $nearbyUsers->pluck('fcm_token')->filter()->toArray();
         
@@ -99,8 +91,7 @@ class MobileUserController extends Controller
             "AN incident has been reported within {$radius} of your location."
         );
         }
-       
-
+    
         // 3. Return Success with JSON
         return response()->json([
             'status' => 'success',
@@ -108,8 +99,6 @@ class MobileUserController extends Controller
             'notifications_sent' => $sentCount,
             'users' => $nearbyUsers
         ]);
-
-
 
     }
 }
