@@ -18,7 +18,11 @@
 
     <script>
         // 1. Initialise the map centered on Penang
-        var map = L.map('map').setView([5.4164, 100.3301], 12);
+        const lat = 5.4164;
+        const lng = 100.3301;
+        const zoomVal = 13; 
+
+        var map = L.map('map').setView([lat, lng], zoomVal);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
