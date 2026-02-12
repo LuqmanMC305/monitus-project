@@ -54,17 +54,32 @@
         var marker, circle;
 
         map.on('click', function(e){
+            // Ensure the danger zone is visible
             if (marker) map.removeLayer(marker);
             if (circle) map.removeLayer(circle);
 
             marker = L.marker(e.latlng).addTo(map);
             circle = L.circle(e.latlng,{
                 color: 'red',
-                radius: 1000
+                radius: 1000 // Must match this with the radius sent to the backend
             }).addTo(map);
 
-            // This verifies "Admin Command" is capturing data correctly
-            console.log("Admin Map Clicked at: " + e.latlng.lat + ", " + e.latlng.lng);
+            // Send the data to AlertController
+            axios.post('/api/send-alert',{
+                title: "Manual Emergency Trigger", // Hardcoded for now
+                instruction: "Please stay away from the red zone.",
+                latitude: e.latlng.lat,
+                longitude: e.latlng.lng,
+                radius: 1000,
+                severity: "Medium"
+            })
+            .then(response => {
+                // Show success notification in browser
+                alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count);
+            })
+            .catch(error => {
+                console.error("The alert could not be saved:", error.response.data);
+            });
         });
     </script>
 </x-app-layout>

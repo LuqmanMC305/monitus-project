@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MobileUserController;
+use App\Http\Controllers\Api\AlertController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -20,6 +21,8 @@ Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
 // Send Alert 
 Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
+
+
 
 /*
 Route::post('/hello', function (Request $request) {
