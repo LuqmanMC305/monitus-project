@@ -5,7 +5,9 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="{ open: false, lat: '', lng: '', radius: 1000 }">
+    <div class="py-12" 
+        x-data="{ open: false, lat: '', lng: '', radius: 1000 }"
+        @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div>
@@ -101,43 +103,42 @@
         var marker, circle;
 
         map.on('click', function(e){
-            // Ensure the danger zone is visible
-            if (marker) map.removeLayer(marker);
-            if (circle) map.removeLayer(circle);
+        // 1. Manage Map Visuals
+        if (marker) map.removeLayer(marker);
+        if (circle) map.removeLayer(circle);
 
-            marker = L.marker(e.latlng).addTo(map);
-            circle = L.circle(e.latlng,{
-                color: 'red',
-                radius: 1000 // Must match this with the radius sent to the backend
-            }).addTo(map);
+        marker = L.marker(e.latlng).addTo(map);
+        circle = L.circle(e.latlng, {
+            color: 'red',
+            radius: 1000 
+        }).addTo(map);
 
-            // Update Alpine.js variables (Finds x-data scope that defined in HTML)
-            let alpineData = document.querySelector('[x-data]').__x.$data;
-            alpineData.lat = e.latlng.lat;
-            alpineData.lng = e.latlng.lng;
-            alpineData.open = true; // This pops the modal up
+        // 2. Open the Modal using the Event Dispatcher 
+        window.dispatchEvent(new CustomEvent('open-modal', { 
+            detail: { lat: e.latlng.lat, lng: e.latlng.lng } 
+            }));
         });
 
-            // Actual Broadcast Function
-            function sendAlert(lat, lng, radius) {
-                axios.post('/api/send-alert', {
-                    title: document.getElementById('modal_title').value,
-                    instruction: document.getElementById('modal_instruction').value,
-                    severity: document.getElementById('modal_severity').value,
-                    latitude: lat,
-                    longitude: lng,
-                    radius: radius
-                })
-                .then(response => {
-                    alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count);
-            
-            // Clean up: Clear the inputs for the next click
-            document.getElementById('modal_title').value = '';
-            document.getElementById('modal_instruction').value = '';
+        // Actual Broadcast Function
+        function sendAlert(lat, lng, radius) {
+            axios.post('/api/send-alert', {
+                title: document.getElementById('modal_title').value,
+                instruction: document.getElementById('modal_instruction').value,
+                severity: document.getElementById('modal_severity').value,
+                latitude: lat,
+                longitude: lng,
+                radius: radius
             })
-            .catch(error => {
-                console.error("The alert could not be saved:", error);
-            });
+            .then(response => {
+                alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count);
+        
+        // Clean up: Clear the inputs for the next click
+        document.getElementById('modal_title').value = '';
+        document.getElementById('modal_instruction').value = '';
+        })
+        .catch(error => {
+            console.error("The alert could not be saved:", error);
+        });
     }
            
     </script>
