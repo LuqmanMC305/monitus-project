@@ -7,13 +7,14 @@
 
     <div class="py-12" 
         x-data="{ open: false, lat: '', lng: '', radius: 1000 }"
-        @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">
+        @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">  <!-- Alpine.js Event Listener -->
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div>
                 </div>
             </div>
 
+            <!-- Broadcast Model Pop-Up for Alert Fill-in Form -->
             <div x-show="open" 
                 class="fixed inset-0 z-[9999] overflow-y-auto" 
                 style="display: none;"
