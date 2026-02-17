@@ -10,7 +10,27 @@
         @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">  <!-- Alpine.js Event Listener -->
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div>
+                    <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div> <!-- Map Container -->
+                </div>
+                <div>
+                    <h3 class="text-center text-lg font-bold mt-5">Recent Alerts</h3>
+                    <table class="min-w-full divide-y divide-gray-200 mt-6">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Severity</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($alerts as $alert)
+                            <tr>
+                                <td>{{ $alert->title }}</td>
+                                <td>{{ $alert->severity }}</td>
+                                <td>{{ $alert->created_at->diffForHumans() }}</td> </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
