@@ -13,6 +13,7 @@
                     <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div> <!-- Map Container -->
                 </div>
                 <div>
+                    <!-- Alert Table History -->
                     <h3 class="text-center text-lg font-bold mt-5">Recent Alerts</h3>
                     <table class="min-w-full divide-y divide-gray-200 mt-6">
                         <thead>
@@ -22,7 +23,7 @@
                                 <th>Time</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="alert-history-table">
                             @foreach($alerts as $alert)
                             <tr>
                                 <td>{{ $alert->title }}</td>
@@ -151,15 +152,38 @@
                 radius: radius
             })
             .then(response => {
-                alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count);
-        
-        // Clean up: Clear the inputs for the next click
-        document.getElementById('modal_title').value = '';
-        document.getElementById('modal_instruction').value = '';
-        })
-        .catch(error => {
-            console.error("The alert could not be saved:", error);
-        });
+                // Get the table body by the ID that just created
+                const tableBody = document.getElementById('alert-history-table');
+
+                /* Prepare the new row HTML
+                   Note: We use "Just now" because the server-side diffForHumans hasn't processed this row yet.
+                */
+                const newRow = `
+                    <tr>
+                        <td>${document.getElementById('modal_title').value}</td>
+                        <td>${document.getElementById('modal_severity').value}</td>
+                        <td>Just now</td>
+                    </tr>
+                `;
+
+                // Insert the row at the top (afterbegin)
+                tableBody.insertAdjacentHTML('afterbegin', newRow);
+
+                // Ensure it limits to only 10 rows
+                if (tableBody.children.length > 10) {
+                    tableBody.lastElementChild.remove(); // Removes the absolute last row in the body
+                }
+
+                // Dialogue Box Pop-Up
+                alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count); 
+
+                // Clean up: Clear the inputs for the next click
+                document.getElementById('modal_title').value = '';
+                document.getElementById('modal_instruction').value = '';
+                })
+            .catch(error => {
+                console.error("The alert could not be saved:", error);
+            });
     }
            
     </script>
