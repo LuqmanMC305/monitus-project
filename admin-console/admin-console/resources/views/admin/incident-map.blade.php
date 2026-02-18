@@ -28,7 +28,15 @@
                             <tr>
                                 <td>{{ $alert->title }}</td>
                                 <td>{{ $alert->severity }}</td>
-                                <td>{{ $alert->created_at->diffForHumans() }}</td> </tr>
+                                <td>{{ $alert->created_at->diffForHumans() }}</td> 
+                                <td class="px-6 py-4">
+                                    <button
+                                        onclick="focusMap({{ $alert->latitude }}, {{ $alert->longitude }}, '{{ addslashes($alert->title) }}')"
+                                        class="bg-blue-600 hover:bg-blue-800 text-white text-xs py-1 px-3 rounded shadow-sm transition">
+                                        Locate
+                                    </button>
+                                </td>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -98,6 +106,10 @@
         const lng = 100.3301;
         const zoomVal = 13; 
 
+        // Define title and severity variables
+        const titleVal = document.getElementById('modal_title').value;
+        const severityVal = document.getElementById('modal_severity').value;
+
         var map = L.map('map').setView([lat, lng], zoomVal);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -155,14 +167,25 @@
                 // Get the table body by the ID that just created
                 const tableBody = document.getElementById('alert-history-table');
 
+                // Capture New Alert Details
+                const freshTitle = document.getElementById('modal_title').value;
+                const freshSeverity = document.getElementById('modal_severity').value;
+
                 /* Prepare the new row HTML
                    Note: We use "Just now" because the server-side diffForHumans hasn't processed this row yet.
                 */
-                const newRow = `
-                    <tr>
-                        <td>${document.getElementById('modal_title').value}</td>
-                        <td>${document.getElementById('modal_severity').value}</td>
-                        <td>Just now</td>
+               const newRow = `
+                    <tr class="border-b">
+                        <td class="px-6 py-4">${freshTitle}</td>
+                        <td class="px-6 py-4">${freshSeverity}</td>
+                        <td class="px-6 py-4">Just now</td>
+                        <td class="px-6 py-4">
+                            <button 
+                                onclick="focusMap(${lat}, ${lng}, '${freshTitle}')"
+                                class="bg-blue-600 hover:bg-blue-800 text-white text-xs py-1 px-3 rounded shadow-sm transition">
+                                Locate
+                            </button>
+                        </td>
                     </tr>
                 `;
 
@@ -184,7 +207,29 @@
             .catch(error => {
                 console.error("The alert could not be saved:", error);
             });
-    }
-           
+        }
+        
+        // Focuses on Map When Click the Alert Button Inside Table
+        window.focusMap = function(lat, lng, titleVal){
+            console.log("Locate button clicked!");
+
+            if (!map) {
+                console.error("The map variable is not defined!");
+                return;
+            }
+            // Creates a smooth zooming animation (.flyto)
+            map.flyTo([lat, lng], 16,{
+                animate:true,
+                duration: 1.5 // in seconds
+            });
+
+            // Temporary marker or popup to show where it is exactly
+            L.popup()
+                .setLatLng([lat, lng])
+                .setContent('<b style="color: #2563eb;">Incident:</b> ' + titleVal)
+                .openOn(map);
+                
+        }
+ 
     </script>
 </x-app-layout>
