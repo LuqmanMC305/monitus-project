@@ -118,11 +118,9 @@
         const lng = 100.3301;
         const zoomVal = 13; 
 
-        // Define title and severity variables
-        const titleVal = document.getElementById('modal_title').value;
-        const severityVal = document.getElementById('modal_severity').value;
-
         var map = L.map('map').setView([lat, lng], zoomVal);
+        var pendingMarker, pendingCircle;
+
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -146,15 +144,14 @@
         .addTo(map);
 
         // 2. Click to Alert Logic
-        var marker, circle;
 
         map.on('click', function(e){
         // 1. Manage Map Visuals
-        if (marker) map.removeLayer(marker);
-        if (circle) map.removeLayer(circle);
+        if (pendingMarker) map.removeLayer(pendingMarker);
+        if (pendingCircle) map.removeLayer(pendingCircle);
 
-        marker = L.marker(e.latlng).addTo(map);
-        circle = L.circle(e.latlng, {
+        pendingMarker = L.marker(e.latlng).addTo(map);
+        pendingCircle = L.circle(e.latlng, {
             color: '#667b99', // Grey slate colour for "Pending" status
             fillColor: '#94a3b8',
             fillOpacity: 0.4,
@@ -169,21 +166,39 @@
 
         // Actual Broadcast Function
         function sendAlert(lat, lng, radius) {
+
+            // Capture New Alert Details
+            const freshTitle = document.getElementById('modal_title').value;
+            const freshInstruction = document.getElementById('modal_instruction').value;
+            const freshSeverity = document.getElementById('modal_severity').value;
+
             axios.post('/api/send-alert', {
-                title: document.getElementById('modal_title').value,
-                instruction: document.getElementById('modal_instruction').value,
-                severity: document.getElementById('modal_severity').value,
+                title: freshTitle,
+                instruction: freshInstruction,
+                severity:freshSeverity,
                 latitude: lat,
                 longitude: lng,
                 radius: radius
             })
             .then(response => {
+                // Change colour from "Pending Grey" to severity colour
+                if (typeof pendingCircle !== 'undefined' && pendingCircle) {
+                    const circleColor = getSeverityColour(freshSeverity);
+                    
+                    pendingCircle.setStyle({
+                        color: circleColor,
+                        fillColor: circleColor
+                    });
+
+                    pendingCircle.bindPopup(`<b>${freshTitle}</b><br>Severity: ${freshSeverity}`);
+
+                    // Release the "pending" status so they aren't deleted on next click
+                    pendingCircle = null;
+                    pendingMarker = null;
+                }
                 // Get the table body by the ID that just created
                 const tableBody = document.getElementById('alert-history-table');
 
-                // Capture New Alert Details
-                const freshTitle = document.getElementById('modal_title').value;
-                const freshSeverity = document.getElementById('modal_severity').value;
 
                 /* Prepare the new row HTML
                    Note: We use "Just now" because the server-side diffForHumans hasn't processed this row yet.
