@@ -25,11 +25,24 @@
                         </thead>
                         <tbody id="alert-history-table">
                             @foreach($alerts as $alert)
-                            <tr>
-                                <td>{{ $alert->title }}</td>
-                                <td>{{ $alert->severity }}</td>
-                                <td>{{ $alert->created_at->diffForHumans() }}</td> 
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-6 py-4">{{ $alert->title }}</td>
                                 <td class="px-6 py-4">
+                                    @php
+                                        $badgeColour = match(strtolower($alert->severity))
+                                        {
+                                            'high' => 'bg-red-500',
+                                            'medium' => 'bg-amber-500',
+                                            'low' => 'bg-yellow-400',
+                                            'default' => 'bg-blue-500',
+                                        }
+                                    @endphp
+                                    <span class="{{ $badgeColour }} px-2.5 py-0.5 rounded-full text-white text-xs font-bold uppercase tracking-wider">
+                                        {{ $alert->severity }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">{{ $alert->created_at->diffForHumans()}}</td> 
+                                <td class="px-6 py-4 text-right">
                                     <button
                                         onclick="focusMap({{ $alert->latitude }}, {{ $alert->longitude }}, '{{ addslashes($alert->title) }}')"
                                         class="bg-blue-600 hover:bg-blue-800 text-white text-xs py-1 px-3 rounded shadow-sm transition">
@@ -71,10 +84,9 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Severity Level</label>
                                 <select id="modal_severity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                                    <option value="Low">Low</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="High">High</option>
-                                    <option value="Critical">Critical</option>
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM" selected>Medium</option>
+                                    <option value="HIGH">High</option>
                                 </select>
                             </div>
 
@@ -143,7 +155,9 @@
 
         marker = L.marker(e.latlng).addTo(map);
         circle = L.circle(e.latlng, {
-            color: 'red',
+            color: '#667b99', // Grey slate colour for "Pending" status
+            fillColor: '#94a3b8',
+            fillOpacity: 0.4,
             radius: 1000 
         }).addTo(map);
 
@@ -174,20 +188,26 @@
                 /* Prepare the new row HTML
                    Note: We use "Just now" because the server-side diffForHumans hasn't processed this row yet.
                 */
-               const newRow = `
-                    <tr class="border-b">
-                        <td class="px-6 py-4">${freshTitle}</td>
-                        <td class="px-6 py-4">${freshSeverity}</td>
-                        <td class="px-6 py-4">Just now</td>
-                        <td class="px-6 py-4">
-                            <button 
-                                onclick="focusMap(${lat}, ${lng}, '${freshTitle}')"
-                                class="bg-blue-600 hover:bg-blue-800 text-white text-xs py-1 px-3 rounded shadow-sm transition">
-                                Locate
-                            </button>
-                        </td>
-                    </tr>
-                `;
+                const colour = getSeverityColour(freshSeverity);
+
+                const newRow = `
+                        <tr class="border-b">
+                            <td class="px-6 py-4">${freshTitle}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-0.5 rounded-full text-white text-xs font-bold uppercase tracking-wider" style="background-color: ${colour}">
+                                    ${freshSeverity}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">Just now</td>
+                            <td class="px-6 py-4">
+                                <button 
+                                    onclick="focusMap(${lat}, ${lng}, '${freshTitle}')"
+                                    class="bg-blue-600 hover:bg-blue-800 text-white text-xs py-1 px-3 rounded shadow-sm transition">
+                                    Locate
+                                </button>
+                            </td>
+                        </tr>
+                    `;
 
                 // Insert the row at the top (afterbegin)
                 tableBody.insertAdjacentHTML('afterbegin', newRow);
@@ -229,6 +249,16 @@
                 .setContent('<b style="color: #2563eb;">Incident:</b> ' + titleVal)
                 .openOn(map);
                 
+        }
+
+        function getSeverityColour(severity){
+            switch(severity.toLowerCase()){
+                case 'high': return '#ff0000'; // Red
+                case 'medium': return '#ff8000'; // Orange
+                case 'low': return '#facc15'; // Yellow
+                default: return '#3b82f6'; // Blue
+            }
+
         }
  
     </script>
