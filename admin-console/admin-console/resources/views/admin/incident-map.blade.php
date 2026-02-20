@@ -127,6 +127,43 @@
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
+        //  Initialise Historical Alert Rendering from DB onto Map
+        @foreach($alerts as $alert)
+            (function() {
+                const hLat = {{ $alert->latitude }};
+                const hLng = {{ $alert->longitude }};
+                const hTitle = "{{ addslashes($alert->title) }}";
+                const hSeverity = "{{ $alert->severity }}";
+                const hColour = getSeverityColour(hSeverity); // Calls your helper function
+
+                L.circle([hLat, hLng], {
+                    color: hColour,
+                    fillColor: hColour,
+                    fillOpacity: 0.4,
+                    radius: {{ $alert->radius ?? 1000 }}
+                })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="font-family: sans-serif;">
+                        <b style="font-size: 14px;">${hTitle}</b><br>
+                        <span style="
+                            display: inline-block; 
+                            margin-top: 5px;
+                            padding: 2px 8px; 
+                            border-radius: 12px; 
+                            background-color: ${hColour}; 
+                            color: white; 
+                            font-size: 10px; 
+                            font-weight: bold;
+                            text-transform: uppercase;">
+                            Severity:
+                            ${hSeverity}
+                        </span>
+                    </div>
+                `);
+            })();
+        @endforeach
+
         // Initialise Search Bar 
         var geocoder = L.Control.geocoder({
             defaultMarkGeocode: false
@@ -190,7 +227,12 @@
                         fillColor: circleColor
                     });
 
-                    pendingCircle.bindPopup(`<b>${freshTitle}</b><br>Severity: ${freshSeverity}`);
+                    pendingCircle.bindPopup(`
+                        <b>${freshTitle}</b><br>
+                        <span style="background-color: ${getSeverityColour(freshSeverity)}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">
+                            ${freshSeverity}
+                        </span>
+                    `);
 
                     // Release the "pending" status so they aren't deleted on next click
                     pendingCircle = null;
