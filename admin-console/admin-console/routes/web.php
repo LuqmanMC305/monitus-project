@@ -22,7 +22,7 @@ Route::middleware([
     // Alert Controller
     Route::post('/api/send-alert', [AlertController::class, 'store']);
     // Resolve Alerts
-    Route::patch('/alerts/{id}/resolve', [IncidentMapController::class, 'resolve']);
+    Route::patch('api/alerts/{id}/resolve', [IncidentMapController::class, 'resolve']);
     // Manage Alerts
     Route::get('/admin/manage-alerts', [IncidentMapController::class, 'manage'])->name('admin.manage-alerts');
 });

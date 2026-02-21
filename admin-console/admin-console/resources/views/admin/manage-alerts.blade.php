@@ -70,11 +70,13 @@
         </div>
     </div>
 
+    <!-- Axios logic to resolve alerts -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         function resolveAlert(id) {
             if (!confirm('Are you sure the incident is resolved? This will remove it from the public map.')) return;
 
+            // Sends PATCH request
             axios.patch(`/api/alerts/${id}/resolve`)
                 .then(response => {
                     alert(response.data.message);

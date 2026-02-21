@@ -27,7 +27,7 @@ class IncidentMapController extends Controller
     }
 
     /**
-     * Update the alert status to 'resolved'.
+     * Update the alert status to 'resolved' from Axios PATCH request.
      */
 
     public function resolve($id)
