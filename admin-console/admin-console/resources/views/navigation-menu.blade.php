@@ -18,6 +18,9 @@
                     <x-nav-link href="{{ route('incident.map') }}" :active="request()->routeIs('incident-map')">
                         {{ __('Incident Map') }}
                     </x-nav-link>
+                    <x-nav-link>
+                        {{ __('Manage Alerts') }}
+                    </x-nav-link>
                 </div>
             </div>
 

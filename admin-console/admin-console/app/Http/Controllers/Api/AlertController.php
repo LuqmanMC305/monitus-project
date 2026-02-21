@@ -50,16 +50,4 @@ class AlertController extends Controller
             'notified_count' => $affectedUsers->count(),
         ]);
     }
-
-    /*
-    public function index()
-    {
-        // Fetch the Latest Alerts
-        $latestNum = 10; // 10 Latest Alerts
-        $alerts = Alert::latest()->take($latestNum)->get();
-        dd($alerts);
-        return view('admin.incident-map', compact('alerts'));
-    }
-
-    */
 }

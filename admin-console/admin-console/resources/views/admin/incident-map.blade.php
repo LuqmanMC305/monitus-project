@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Incident Command Centre') }}
+            {{ __('Incident Command Centre (Click on the Map to Compose Alerts)') }}
         </h2>
     </x-slot>
 
@@ -82,6 +82,17 @@
                             </div>
 
                             <div>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Impact Radius: <span x-text="radius"></span>m
+                                </label>
+                                <input type="range" 
+                                    x-model="radius" 
+                                    min="100" max="5000" step="100"
+                                    @input="if(window.pendingCircle) window.pendingCircle.setRadius(radius)"
+                                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600">
+                            </div>
+
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700">Severity Level</label>
                                 <select id="modal_severity" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                                     <option value="LOW">Low</option>
@@ -97,7 +108,10 @@
 
                         <div class="mt-6 flex justify-end space-x-3">
                             <button @click="open = false" type="button" class="bg-gray-200 px-4 py-2 rounded-md text-gray-700 hover:bg-gray-300">Cancel</button>
-                            <button @click="sendAlert(lat, lng, radius); open = false" type="button" class="bg-red-600 px-4 py-2 rounded-md text-white hover:bg-red-700">Confirm & Broadcast</button>
+                            <button @click="sendAlert(lat, lng, radius); open = false" 
+                             type="button" 
+                             class="bg-red-600 px-4 py-2 rounded-md text-white hover:bg-red-700">
+                             Confirm & Broadcast</button>
                         </div>
                     </div>
                 </div>
@@ -119,7 +133,8 @@
         const zoomVal = 13; 
 
         var map = L.map('map').setView([lat, lng], zoomVal);
-        var pendingMarker, pendingCircle;
+        window.pendingMarker = null;
+        window.pendingCircle = null;
 
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -181,18 +196,23 @@
         .addTo(map);
 
         // 2. Click to Alert Logic
-
         map.on('click', function(e){
         // 1. Manage Map Visuals
-        if (pendingMarker) map.removeLayer(pendingMarker);
-        if (pendingCircle) map.removeLayer(pendingCircle);
+        if (window.pendingMarker) map.removeLayer(window.pendingMarker);
+        if (window.pendingCircle) map.removeLayer(window.pendingCircle);
 
-        pendingMarker = L.marker(e.latlng).addTo(map);
-        pendingCircle = L.circle(e.latlng, {
+        // Grabs current value from Alpine.js slider
+        const alpineElement = document.querySelector('[x-data]');
+
+        // Add a default value of 1000, ensure radius is not NaN
+        const currentRadius = Alpine.$data(alpineElement).radius || 1000;
+
+        window.pendingMarker = L.marker(e.latlng).addTo(map);
+        window.pendingCircle = L.circle(e.latlng, {
             color: '#667b99', // Grey slate colour for "Pending" status
             fillColor: '#94a3b8',
             fillOpacity: 0.4,
-            radius: 1000 
+            radius: parseFloat(currentRadius)
         }).addTo(map);
 
         // 2. Open the Modal using the Event Dispatcher 
@@ -235,8 +255,8 @@
                     `);
 
                     // Release the "pending" status so they aren't deleted on next click
-                    pendingCircle = null;
-                    pendingMarker = null;
+                    window.pendingCircle = null;
+                    window.pendingMarker = null;
                 }
                 // Get the table body by the ID that just created
                 const tableBody = document.getElementById('alert-history-table');
