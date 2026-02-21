@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Admin\IncidentMapController;
+use App\Http\Controllers\Api\AlertController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -15,7 +18,11 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
     // Incident Map Route
-    Route::get('/incident-map', [App\Http\Controllers\Admin\IncidentMapController::class, 'index'])->name('incident.map');
+    Route::get('/incident-map', [IncidentMapController::class, 'index'])->name('incident.map');
     // Alert Controller
-    Route::post('/api/send-alert', [App\Http\Controllers\Api\AlertController::class, 'store']);
+    Route::post('/api/send-alert', [AlertController::class, 'store']);
+    // Resolve Alerts
+    Route::patch('/alerts/{id}/resolve', [IncidentMapController::class, 'resolve']);
+    // Manage Alerts
+    Route::get('/admin/manage-alerts', [IncidentMapController::class, 'manage'])->name('admin.manage-alerts');
 });

@@ -13,7 +13,42 @@ class IncidentMapController extends Controller
     {
         // Fetch the Latest Alerts
         $latestNum = 10; // 10 Latest Alerts
-        $alerts = Alert::latest()->take($latestNum)->get();
+        $alerts = Alert::where('status','active')
+                        ->latest()
+                        ->take($latestNum)
+                        ->get();
+
         return view('admin.incident-map', compact('alerts'));
+
+        /*
+        $alerts = Alert::latest()->take($latestNum)->get();
+        
+        */
+    }
+
+    /**
+     * Update the alert status to 'resolved'.
+     */
+
+    public function resolve($id)
+    {
+        $alert = Alert::findOrFail($id);
+        $alert->status = 'resolved';
+        $alert->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Alert has been resolved and removed from the map.'
+        ]);
+    }
+
+    public function manage()
+    {
+        // Fetch all active alerts for admin control
+        $activeAlerts = Alert::where('status', 'active')
+                            ->latest()
+                            ->get();
+
+        return view('admin.manage-alerts', compact('activeAlerts'));
     }
 }
