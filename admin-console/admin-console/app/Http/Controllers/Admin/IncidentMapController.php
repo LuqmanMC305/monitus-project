@@ -75,12 +75,20 @@ class IncidentMapController extends Controller
         define('RECENT_ALERT_NUM', 5);
         $recentAlerts = Alert::latest()->take(RECENT_ALERT_NUM)->get();
 
+        // 4. Get Alerts Counts by Severity
+        $highAlerts = Alert::where('severity', 'HIGH')->count();
+        $medAlerts = Alert::where('severity', 'MEDIUM')->count();
+        $lowAlerts = Alert::where('severity', 'LOW')->count();
+
         return view('dashboard', compact(
             'activeCount',
             'resolvedCount', 
             'totalAlerts', 
             'highSeverity',
-            'recentAlerts'
+            'recentAlerts',
+            'highAlerts',
+            'medAlerts',
+            'lowAlerts'
         ));
     }
 }
