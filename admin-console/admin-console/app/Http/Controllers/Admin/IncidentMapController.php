@@ -60,4 +60,27 @@ class IncidentMapController extends Controller
 
         return view('admin.manage-alerts', compact('activeAlerts', 'resolvedAlerts'));
     }
+
+    public function dashboard()
+    {
+        // 1. Get counts for metric cards
+        $activeCount = Alert::where('status', 'active')->count();
+        $resolvedCount = Alert::where('status', 'resolved')->count();
+        $totalAlerts = Alert::count();
+
+        // 2. Get Severity Breakdown for chart
+        $highSeverity = Alert::where('status', 'active')->where('severity', 'HIGH')->count();
+
+        // 3. Get Recent 5 Alerts
+        define('RECENT_ALERT_NUM', 5);
+        $recentAlerts = Alert::latest()->take(RECENT_ALERT_NUM)->get();
+
+        return view('dashboard', compact(
+            'activeCount',
+            'resolvedCount', 
+            'totalAlerts', 
+            'highSeverity',
+            'recentAlerts'
+        ));
+    }
 }

@@ -14,9 +14,8 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Admin Dashboard
+    Route::get('/dashboard', [IncidentMapController::class, 'dashboard'])->name('dashboard'); 
     // Incident Map Route
     Route::get('/incident-map', [IncidentMapController::class, 'index'])->name('incident.map');
     // Alert Controller
