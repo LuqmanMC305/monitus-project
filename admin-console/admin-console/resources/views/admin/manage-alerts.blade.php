@@ -7,6 +7,9 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+            <!-- Active Alerts Table -->
+
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-bold">Currently Active Incidents</h3>
@@ -60,6 +63,52 @@
                             <tr>
                                 <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
                                     No active alerts found.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Resolved Alerts Table -->
+            <div div class="mt-12 bg-gray-50 overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4 text-gray-600">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-semibold uppercase tracking-wider">Resolved Incident History></h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 opacity-75">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Incident</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Resolved Time</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            @forelse($resolvedAlerts as $history)
+                            <tr>
+                                <td class="px-6 py-3 text-sm text-gray-600">
+                                    <span class="font-medium">{{ $history->title }}</span>
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-400">
+                                    {{ $history->updated_at->format('d M Y, H:i') }} 
+                                    ({{ $history->updated_at->diffForHumans() }})
+                                </td>
+                                <td class="px-6 py-3 text-right">
+                                    <span class="text-[10px] font-bold text-gray-400 border border-gray-300 px-2 py-0.5 rounded uppercase">
+                                        {{ $history->status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-center text-gray-400 text-sm italic">
+                                    No resolved history found yet.
                                 </td>
                             </tr>
                             @endforelse

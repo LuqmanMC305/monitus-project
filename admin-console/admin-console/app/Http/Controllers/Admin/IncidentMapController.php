@@ -49,6 +49,15 @@ class IncidentMapController extends Controller
                             ->latest()
                             ->get();
 
-        return view('admin.manage-alerts', compact('activeAlerts'));
+        // Fetch recently resolved alerts for the history section
+        define('RESOLVE_ALERT_NUM', 10);
+
+        $resolvedAlerts = Alert::where('status', 'resolved')
+                            ->latest()
+                            ->take(RESOLVE_ALERT_NUM)
+                            ->get();
+
+
+        return view('admin.manage-alerts', compact('activeAlerts', 'resolvedAlerts'));
     }
 }
