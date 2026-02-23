@@ -6,10 +6,25 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+// Background Service for Location Update Cycle using Workmanager
+import 'package:workmanager/workmanager.dart';
+import 'services/background_service.dart'; 
+
 
 void main() async{
   // Ensure the initialisation of Flutter bindings
   WidgetsFlutterBinding.ensureInitialized();
+  Workmanager().initialize(callbackDispatcher);
+
+  // Schedule a 10-minute location update cycle
+  Workmanager().registerPeriodicTask(
+    "1", 
+    "locationUpdateTask",
+    frequency: Duration(minutes: 15), // Android min frequency is 15 mins
+    constraints: Constraints(
+      networkType: NetworkType.connected, // Only run if internet is available 
+    ),
+  );
 
   // Initialise Firebase
   try{
