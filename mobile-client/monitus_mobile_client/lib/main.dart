@@ -20,7 +20,7 @@ void main() async{
   Workmanager().registerPeriodicTask(
     "1", 
     "locationUpdateTask",
-    frequency: Duration(minutes: 15), // Android min frequency is 15 mins
+    initialDelay: Duration(seconds: 10), // Android min frequency is 15 mins
     constraints: Constraints(
       networkType: NetworkType.connected, // Only run if internet is available 
     ),
