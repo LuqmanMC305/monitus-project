@@ -46,6 +46,8 @@ class RegistrationService {
         'longitude': lng
       };
 
+      debugPrint("Attempting to sync at: ${DateTime.now()}");
+      
       // 4. Send to Laravel API
       final response = await http.post(
         Uri.parse(_apiUrl),

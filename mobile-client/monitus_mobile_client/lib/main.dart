@@ -17,13 +17,10 @@ void main() async{
   Workmanager().initialize(callbackDispatcher);
 
   // Schedule a 10-minute location update cycle
-  Workmanager().registerPeriodicTask(
-    "1", 
+  Workmanager().registerOneOffTask(
+    "immediate_verify", 
     "locationUpdateTask",
-    initialDelay: Duration(seconds: 10), // Android min frequency is 15 mins
-    constraints: Constraints(
-      networkType: NetworkType.connected, // Only run if internet is available 
-    ),
+    initialDelay: Duration(seconds: 5), // Android min frequency is 15 mins
   );
 
   // Initialise Firebase

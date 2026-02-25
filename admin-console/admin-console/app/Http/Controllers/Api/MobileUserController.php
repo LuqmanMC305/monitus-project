@@ -17,6 +17,8 @@ class MobileUserController extends Controller
      */
     public function register(Request $request)
     {
+        Log::info("Background Update Hit!");
+        
         // 1. Request Validation
         $validated = $request->validate([
             'device_id'=> 'required|string',
