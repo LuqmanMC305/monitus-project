@@ -17,10 +17,14 @@ void main() async{
   Workmanager().initialize(callbackDispatcher);
 
   // Schedule a 10-minute location update cycle
-  Workmanager().registerOneOffTask(
-    "immediate_verify", 
+  Workmanager().registerPeriodicTask(
+    "monitus_location_sync", 
     "locationUpdateTask",
-    initialDelay: Duration(seconds: 5), // Android min frequency is 15 mins
+    frequency: Duration(minutes: 15), // Android min frequency is 15 mins
+    initialDelay: Duration(seconds: 10), 
+    constraints: Constraints(
+      networkType: NetworkType.connected, // Saves battery by not trying without internet
+    )
   );
 
   // Initialise Firebase
