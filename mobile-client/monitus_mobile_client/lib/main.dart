@@ -5,15 +5,66 @@ import 'screens/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 // Background Service for Location Update Cycle using Workmanager
 import 'package:workmanager/workmanager.dart';
 import 'services/background_service.dart'; 
 
+// Background mesage handler
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Ensure Firebase is ready for the background process
+  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
+// Define Foreground Notification
+Future<void> _showForegroundNotification(RemoteMessage message) async {
+  final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'high_importance_channel', // Match the ID you defined in main.dart
+    'Emergency Alerts',
+    importance: Importance.max,
+    priority: Priority.high,
+    icon: '@mipmap/ic_launcher',
+  );
+
+  await notificationsPlugin.show(
+    id: message.hashCode,          
+    title: message.notification?.title, 
+    body: message.notification?.body,  
+    notificationDetails: const NotificationDetails(android: androidDetails), // Labelled 'notificationDetails'
+    payload: 'alert_data',  
+  );
+}
 
 void main() async{
   // Ensure the initialisation of Flutter bindings
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialise Firebase
+  try{
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    // Print FCM Token
+    String? token = await FirebaseMessaging.instance.getToken(); 
+    debugPrint("FCM Token: $token");
+
+    // Set background handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Foreground Listener
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('Foreground message received: ${message.notification?.title}');
+      if (message.notification != null) {
+        _showForegroundNotification(message);
+      }
+    });         
+  } catch (e){
+    debugPrint("Firebase initialisation failed! $e");
+  }
+
   Workmanager().initialize(callbackDispatcher);
 
   // Schedule a 10-minute location update cycle
@@ -26,15 +77,6 @@ void main() async{
       networkType: NetworkType.connected, // Saves battery by not trying without internet
     )
   );
-
-  // Initialise Firebase
-  try{
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-  } catch (e){
-    debugPrint("Firebase initialisation failed! $e");
-  }
 
   // Define High-Importance Channel
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -75,3 +117,4 @@ class MonitusApp extends StatelessWidget {
     );
   }
 }
+
