@@ -19,7 +19,7 @@ class RegistrationProvider extends ChangeNotifier {
     notifyListeners(); // Tells the UI to show the loading spinner
 
     try {
-      await _service.registerUser();
+      await _service.registerUser(null, null);
       _isSuccess = true;
     } catch (e) {
       _errorMessage = e.toString();

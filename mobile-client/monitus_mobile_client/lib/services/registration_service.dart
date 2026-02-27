@@ -4,71 +4,49 @@ import 'package:geolocator/geolocator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
+
+
 class RegistrationService {
-  // Replace with your local IP address (not localhost if using physical device)
-  //final String _apiUrl = "http://192.168.0.196:8000/api/register-mobile"; 
 
-  //TESTING FOR BROWSER MOCK DATA
-  final String _apiUrl = "http://192.168.0.195:8000/api/register-mobile"; 
+  // Parse URL
+  final _apiUrl = Uri.parse('http://192.168.0.195:8000/api/register-mobile');
 
-  Future<void> registerUser() async {
-    try {
-      String? fcmToken;
-      double lat, lng;
-      
-      if(kIsWeb){
-        // BROWSER MOCK DATA
-        fcmToken = "web_mock_token_${DateTime.now().millisecondsSinceEpoch}";
-        lat = 4.1390; // Mock Latitude 
-        lng = 101.6869; // Mock Longitude
-        debugPrint("Web Mode: Using mock hardware data");
+  Future<void> registerUser(double? manualLat, double? manualLng) async {
+    try{
+      // Fetch the FCM Token
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
 
-      }
-      else{
-        // REAL MOBILE LOGIC
+       // Fetch the Current Location 
+      Position position = await _determinePosition();
+      double lat = position.latitude;
+      double lng = position.longitude;
 
-        // 1. Fetch the FCM Token
-        fcmToken = await FirebaseMessaging.instance.getToken();
-
-        // 2. Fetch the Current Location
-        Position position = await _determinePosition();
-        lat = position.latitude;
-        lng = position.longitude;
-
-
-      }
-      
-      // 3. Prepare the Data Package
+      // Prepare Data Package
       Map<String, dynamic> data = {
-        'fcm_token': fcmToken,
+        'user_id': '5',
+        'fcm_token': fcmToken ?? '',
         'device_id': 'mobile_device_001', // Ideally get a real unique ID (Hardcoded for now)
         'latitude': lat,
         'longitude': lng
       };
-
-      debugPrint("Attempting to sync at: ${DateTime.now()}");
       
-      // 4. Send to Laravel API
+      debugPrint("Attempting to sync at: ${DateTime.now()}");
+
+      // 4. Send the Single POST request to Laravel 
       final response = await http.post(
-        Uri.parse(_apiUrl),
+        _apiUrl,
         headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
         body: jsonEncode(data),
       );
-      
-      if (response.statusCode == 201) {
-        if(kDebugMode){
-          debugPrint("Registration Success: ${response.body}");
-        }
-      } else {
-        if(kDebugMode){
-          debugPrint("Registration Failed: ${response.statusCode}");
-        }
-      }
-    } catch (e) {
-      debugPrint("Error during registration: $e");
-    }
-  }
 
+      // Print Sync Status
+      if (response.statusCode == 200) debugPrint("Sync Success: Token and Location sent to Laravel");
+      else debugPrint("Sync Failed: ${response.statusCode}"); 
+
+    } catch (e) { debugPrint("Error during sync: $e"); }
+      
+  }
+    
   // Standard Geolocator permission handler
   Future<Position> _determinePosition() async {
     bool serviceEnabled;

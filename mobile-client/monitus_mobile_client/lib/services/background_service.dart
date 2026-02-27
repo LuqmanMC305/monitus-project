@@ -17,9 +17,8 @@ void callbackDispatcher() {
         );
 
         final service = RegistrationService();
-        
         // Periodically reports coordinates to backend
-        await service.registerUser(); 
+        await service.registerUser(null, null); 
 
         // Define the plugin instance and name it 'notifications'
         final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
