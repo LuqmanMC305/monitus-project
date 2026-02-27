@@ -40,7 +40,7 @@ class RegistrationService {
       );
 
       // Print Sync Status
-      if (response.statusCode == 200) debugPrint("Sync Success: Token and Location sent to Laravel");
+      if (response.statusCode == 200 || response.statusCode == 201) debugPrint("Sync Success: Token and Location sent to Laravel");
       else debugPrint("Sync Failed: ${response.statusCode}"); 
 
     } catch (e) { debugPrint("Error during sync: $e"); }

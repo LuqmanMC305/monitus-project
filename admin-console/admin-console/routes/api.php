@@ -2,8 +2,13 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Http\Controllers\Api\MobileUserController;
 use App\Http\Controllers\Api\AlertController;
+use App\Models\MobileUser;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\AndroidConfig;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,6 +26,38 @@ Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
 // Send Alert 
 Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
+
+// Temporarily Route to Test Alert by Visiting URL in Laptop Browser
+Route::get('/test-push', function () {
+    $messaging = Firebase::messaging();
+    
+    // Get the token for User 5
+    $user = MobileUser::where('mobile_user_id', 5)->first();
+
+    if (!$user || !$user->fcm_token) {
+        return "No token found for User 5!";
+    }
+
+
+    // Create the Emergency Message
+    $message = CloudMessage::new()
+        ->withNotification(Notification::create(
+                'Monitus Flood Alert!', 
+                'Emergency: Heavy flooding detected in your current zone. Move to high ground.'
+            ))
+        ->withAndroidConfig([
+        'notification' => [
+            'channel_id' => 'high_importance_channel', // Match your Flutter code
+            ],
+        ])
+        ->withData(['alert_type' => 'flood_warning']) // For future logic
+        ->toToken( $user->fcm_token);
+    
+    // Send it!
+    $messaging->send($message);
+
+    return "Alert sent to User 5 at " . now();
+});
 
 
 
