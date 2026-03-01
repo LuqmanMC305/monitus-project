@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:monitus_mobile_client/services/database_helper.dart';
 
 // Background Service for Location Update Cycle using Workmanager
 import 'package:workmanager/workmanager.dart';
@@ -55,10 +56,19 @@ void main() async{
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // Foreground Listener
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint('Foreground message received: ${message.notification?.title}');
+
       if (message.notification != null) {
         _showForegroundNotification(message);
+
+       await DatabaseHelper.instance.insertAlert({
+          'title': message.notification?.title ?? 'No Title',
+          'body': message.notification?.body ?? 'No Body',
+          'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
+          'received_at': DateTime.now().toString(),
+      });
+        debugPrint('Alert stored to Local database.');
       }
     });         
   } catch (e){

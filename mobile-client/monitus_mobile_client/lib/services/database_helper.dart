@@ -1,0 +1,56 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+class DatabaseHelper {
+  static final DatabaseHelper instance = DatabaseHelper._init();
+  static Database? _database;
+
+  DatabaseHelper._init();
+
+  // Initialiser (waits until actually need to save or read an alert)
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB('monitus_local.db');
+    return _database!;
+  }
+
+  // Handles the physical location of the database file
+  Future<Database> _initDB(String filePath) async {
+    // Asks Android to locate private DB folder
+    final dbPath = await getDatabasesPath();
+
+    // Joins the folder path with  specific filename
+    final path = join(dbPath, filePath);
+
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
+  }
+
+  // Define Alert History table schema
+  Future _createDB(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        alert_type TEXT,
+        received_at TEXT NOT NULL
+      )
+    ''');
+  }
+
+  // Method to save an incoming notification
+  Future<int> insertAlert(Map<String, dynamic> alert) async {
+    final db = await instance.database;
+    return await db.insert('alerts', alert);
+  }
+
+  // Method to fetch all alerts for your Alert List screen
+  Future<List<Map<String, dynamic>>> getAllAlerts() async {
+    final db = await instance.database;
+    return await db.query('alerts', orderBy: 'received_at DESC');
+  }
+}
