@@ -69,11 +69,17 @@ void main() async{
           'received_at': DateTime.now().toString(),
       });
         debugPrint('Alert stored to Local database.');
+
+        // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
+        await DatabaseHelper.instance.testDatabase();
       }
+
+      
     });         
   } catch (e){
     debugPrint("Firebase initialisation failed! $e");
   }
+
 
   Workmanager().initialize(callbackDispatcher);
 

@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -12,6 +13,17 @@ class DatabaseHelper {
     if (_database != null) return _database!;
     _database = await _initDB('monitus_local.db');
     return _database!;
+  }
+
+  // TEMPORARILY CODE FOR LOCAL MOBILE DATA PERSISTENT (WILL REMOVE IT LATER)
+  Future<void> testDatabase() async {
+    final db = await instance.database;
+    final result = await db.query('alerts');
+    debugPrint('--- LOCAL DATABASE DUMP ---');
+    for (var row in result) {
+      debugPrint('Alert ID ${row['id']}: ${row['title']} | Type: ${row['alert_type']}');
+    }
+    debugPrint('--- END OF DUMP (Total: ${result.length}) ---');
   }
 
   // Handles the physical location of the database file
