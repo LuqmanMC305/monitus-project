@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitus_mobile_client/screens/alert_history_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
 
@@ -17,7 +18,23 @@ class RegistrationScreen extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (provider.isSuccess) Text("Registered Successfully!"),
+                  if (provider.isSuccess)
+                    Column(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 40),
+                        const Text("Registered Successfuly", style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed:() {
+                            // Navitage to new template screen
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AlertHistoryScreen())
+                            );
+                          },
+                         child: const Text("Alert History"))
+                      ],
+                    ),
                   if (provider.errorMessage != null) Text("Error: ${provider.errorMessage}"),
                   ElevatedButton(
                     onPressed: () => provider.handleRegistration(),

@@ -65,4 +65,15 @@ class DatabaseHelper {
     final db = await instance.database;
     return await db.query('alerts', orderBy: 'received_at DESC');
   }
+
+  // Method to delete old alerts (> 14 days)
+  Future<int> deleteOldAlerts() async {
+    final db = await instance.database;
+    // This deletes any alert where the 'received_at' date is older than 14 days
+    return await db.delete(
+      'alerts',
+      where: 'received_at < ?',
+      whereArgs: [DateTime.now().subtract(const Duration(days: 14)).toString()],
+    );
+  }
 }
