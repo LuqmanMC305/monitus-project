@@ -26,8 +26,8 @@ class RegistrationScreen extends StatelessWidget {
                         const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed:() {
-                            // Navitage to new template screen
-                            Navigator.push(
+                            // Navigate to new template screen
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => const AlertHistoryScreen())
                             );

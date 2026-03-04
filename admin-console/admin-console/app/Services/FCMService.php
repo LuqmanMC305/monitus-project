@@ -24,7 +24,16 @@ class FCMService
         
         $message = CloudMessage::new()
             ->withNotification($notification)
-            ->withData(['type' => 'emergency_alert']); // Extra data for Flutter logic
+            ->withAndroidConfig([
+                'notification' => [
+                    'channel_id' => 'high_importance_channel', // Matches Flutter setup
+                     'priority' => 'high',
+                ],
+            ])
+            ->withData([
+                'type' => 'emergency_alert',
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                ]); // Extra data for Flutter logic
 
         // Send to multiple tokens at once (Multicast)
         $report = $this->messaging->sendMulticast($message, $tokens);

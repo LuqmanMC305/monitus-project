@@ -48,6 +48,16 @@ void main() async{
   // Initialise Firebase
   try{
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+    // Request Permissions
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    debugPrint('User granted permission: ${settings.authorizationStatus}');
+
     // Print FCM Token
     String? token = await FirebaseMessaging.instance.getToken(); 
     debugPrint("FCM Token: $token");
@@ -57,6 +67,8 @@ void main() async{
 
     // Foreground Listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      debugPrint("--- SOMETHING ARRIVED ---");
+
       debugPrint('Foreground message received: ${message.notification?.title}');
 
       if (message.notification != null) {

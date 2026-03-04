@@ -91,7 +91,7 @@ class MobileUserController extends Controller
             $tokens,
             "EMERGENCY ALERTS",
             "AN incident has been reported within {$radius} of your location."
-        );
+         );
         }
     
         // 3. Return Success with JSON
@@ -99,7 +99,7 @@ class MobileUserController extends Controller
             'status' => 'success',
             'geo_engine_found' => $nearbyUsers->count(),
             'notifications_sent' => $sentCount,
-            'users' => $nearbyUsers
+            'users' => $nearbyUsers,
         ]);
 
     }
