@@ -4,40 +4,34 @@ namespace App\Services;
 
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+use Kreait\Firebase\Messaging\AndroidConfig;
 
 class FCMService
 {
     protected $messaging;
 
-    public function __construct()
+   public function sendEmergencyAlert($tokens, $title, $body)
     {
-        // This automatically uses the FIREBASE_CREDENTIALS from your .env
-        $this->messaging = app('firebase.messaging');
-    }
+        // Accessing Messaging Instance Via Firebase Facades
+        $messaging = Firebase::messaging();
+        $sentCount = 0;
 
-    public function sendEmergencyAlert($tokens, $title, $body)
-    {
-        if (empty($tokens)) return 0;
+        foreach ($tokens as $token) {
+            $message = CloudMessage::new()
+                ->withNotification(Notification::create($title, $body)) //
+                ->withAndroidConfig([
+                    'priority' => 'high', 
+                    'notification' => [
+                         'channel_id' => 'high_importance_channel', // CRITICAL: Matches your test
+                    ],       
+                ])
+                ->withData(['alert_type' => 'emergency']) //
+                ->toToken($token);
 
-        // Create the notification payload
-        $notification = Notification::create($title, $body);
-        
-        $message = CloudMessage::new()
-            ->withNotification($notification)
-            ->withAndroidConfig([
-                'notification' => [
-                    'channel_id' => 'high_importance_channel', // Matches Flutter setup
-                     'priority' => 'high',
-                ],
-            ])
-            ->withData([
-                'type' => 'emergency_alert',
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                ]); // Extra data for Flutter logic
-
-        // Send to multiple tokens at once (Multicast)
-        $report = $this->messaging->sendMulticast($message, $tokens);
-
-        return $report->successes()->count();
+            $messaging->send($message);
+            $sentCount++;
+        }
+        return $sentCount;
     }
 }

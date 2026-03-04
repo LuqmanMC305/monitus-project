@@ -64,6 +64,9 @@ class AlertController extends Controller
             'notified_count' => $affectedUsers->count(),
             'tokens_found' => $tokens, // Now you will see this in Edge!
             'debug_user_ids' => $affectedUsers->pluck('mobile_user_id'),
+            'search_radius' => $alert->radius,
+            'lat' => $alert->latitude,
+            'lng' => $alert->longitude,
         ]);
     }
 }

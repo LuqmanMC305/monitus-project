@@ -27,6 +27,13 @@ Route::post('/register-mobile', [MobileUserController::class, 'register']);
 // Send Alert 
 Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
 
+// Test Handshake
+Route::get('/test-handshake', function (App\Services\FCMService $service) {
+    $user = App\Models\MobileUser::find(5);
+    $result = $service->sendEmergencyAlert([$user->fcm_token], "Handshake Test", "Is Flutter listening?");
+    return "Service returned: " . $result;
+});
+
 // Temporarily Route to Test Alert by Visiting URL in Laptop Browser
 Route::get('/test-push', function () {
     $messaging = Firebase::messaging();

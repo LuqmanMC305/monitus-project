@@ -86,6 +86,8 @@ class MobileUserController extends Controller
         $tokens = $nearbyUsers->pluck('fcm_token')->filter()->toArray();
         
         $sentCount = 0;
+
+        /*
         if(!empty($tokens)){
             $sentCount = $fcmservice->sendEmergencyAlert(
             $tokens,
@@ -93,6 +95,16 @@ class MobileUserController extends Controller
             "AN incident has been reported within {$radius} of your location."
          );
         }
+        */
+
+         if(!empty($tokens)){
+            $sentCount = $fcmservice->sendEmergencyAlert(
+            $tokens,
+            $request->title ?? "EMERGENCY ALERT",
+            $request->instruction ?? "Incident reported within {$radius}m of your location."
+         );
+        }
+
     
         // 3. Return Success with JSON
         return response()->json([
