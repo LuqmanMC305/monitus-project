@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\DeliveryLog;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+
 class MobileUser extends Model
 {
     use HasFactory;
@@ -49,23 +50,13 @@ class MobileUser extends Model
     */
 
     /**
-     * Get the alerts sent to this mobile user.
+     * One-to-many relationship ("One Mobile User can be found in many different rows of delivery logs.)
      */
 
-    public function alerts(): HasMany
-    {
-        // This tells Laravel that the 'alerts' table has a 'mobile_user_id' column
-        return $this->hasMany(Alert::class, 'mobile_user_id');
-    }
-
-    /*
-      A MobileUser can have many delivery logs. WILL IMPLEMENT LATER
-     
     public function deliveryLogs()
     {
-        return $this->hasMany(DeliveryLog::class, 'mobile_user_id');
+        return $this->hasMany(DeliveryLog::class, 'mobile_user_id', 'mobile_user_id');
     }
 
-    */
 
 }

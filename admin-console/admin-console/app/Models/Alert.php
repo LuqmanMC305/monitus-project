@@ -22,4 +22,15 @@ class Alert extends Model
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
+
+
+    /*  Many-to-Many relationship via junction table 
+        Looks at alert_id and hops to deliver_logs table)
+        Find all associated mobile_user_id
+    */
+    public function mobileUsers()
+    {
+        return $this->belongsToMany(MobileUser::class, 'delivery_logs', 'alert_id', 'mobile_user_id')
+                    ->withPivot('is_success', 'delivered_at');
+    }
 }
