@@ -68,7 +68,20 @@ void main() async{
     // Foreground Listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint("--- SOMETHING ARRIVED ---");
+      
+      // Check the "Silent" Resolve Signal first
+      if (message.data['type'] == 'RESOLVE_ALERT') {
+        String title = message.data['alert_title'] ?? '';
+        
+        // Update the local SQLite database status
+        await DatabaseHelper.instance.updateAlertStatusByTitle(title, 'resolved');
+        
+        debugPrint("UI Handshake: Alert '$title' hidden from list.");
+        return; // Stop here so no notification is shown for a resolve signal
+  }
 
+
+      // Start of the standard alert logic (notification + insertation)
       debugPrint('Foreground message received: ${message.notification?.title}');
 
       if (message.notification != null) {

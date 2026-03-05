@@ -46,6 +46,15 @@ class AlertController extends Controller
         ->where('updated_at', '>=', now()->subMinutes(30))
         ->get();
 
+        foreach ($affectedUsers as $user)
+        {
+            // Attach user to the alert
+            $alert->mobileUsers()->attach($user->mobile_user_id, [
+                'is_success' => true,
+                'delivered_at' => now(),
+            ]);
+        }
+
         // Extract Tokers from Notifier Service
         $tokens = $affectedUsers->pluck('fcm_token')->filter()->toArray();
 

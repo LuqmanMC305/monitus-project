@@ -23,6 +23,8 @@ return new class extends Migration
                   ->onDelete('cascade');
 
             $table->boolean('is_success')->default(true);
+            $table->timestamp('delivered_at')->nullable();
+            
             $table->timestamps();
         });
     }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\DeliveryLog;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class MobileUser extends Model
@@ -56,6 +57,17 @@ class MobileUser extends Model
     public function deliveryLogs()
     {
         return $this->hasMany(DeliveryLog::class, 'mobile_user_id', 'mobile_user_id');
+    }
+
+    public function alerts(): BelongsToMany
+    {
+        // Path: MobileUser -> delivery_logs -> Alert
+        return $this->belongsToMany(
+            Alert::class, 
+            'delivery_logs',    // The junction table
+            'mobile_user_id',   // FK on junction table pointing to this model
+            'alert_id'          // FK on junction table pointing to Alert
+        )->withPivot('is_success', 'delivered_at');
     }
 
 

@@ -46,7 +46,7 @@ class IncidentMapController extends Controller
         // Find tokens for users who were originally notified by this alert
         // Note: Adjust 'fcm_token' to match  actual MobileUser column name
         $tokens = \App\Models\MobileUser::whereHas('alerts', function($q) use ($id) {
-            $q->where('alert_id', $id); 
+            $q->where('delivery_logs.alert_id', $id); 
         })->pluck('fcm_token')->filter()->toArray();
 
         if (!empty($tokens)) {

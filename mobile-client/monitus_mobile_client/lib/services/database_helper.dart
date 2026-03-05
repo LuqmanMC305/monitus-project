@@ -26,7 +26,7 @@ class DatabaseHelper {
     debugPrint('--- END OF DUMP (Total: ${result.length}) ---');
   }
 
-  // Handles the physical location of the database file
+  // Method to handle the physical location of the database file
   Future<Database> _initDB(String filePath) async {
     // Asks Android to locate private DB folder
     final dbPath = await getDatabasesPath();
@@ -90,4 +90,16 @@ class DatabaseHelper {
       orderBy: 'received_at DESC'
     );
   }
+
+  // Method to Update Alert Status
+  Future<int> updateAlertStatusByTitle(String title, String status) async {
+  final db = await instance.database;
+
+  return await db.update(
+    'alerts',
+    {'status': status}, // Set status to 'resolved'
+    where: 'title = ?',  // Find the row where the title matches
+    whereArgs: [title],
+  );
+ }
 }
