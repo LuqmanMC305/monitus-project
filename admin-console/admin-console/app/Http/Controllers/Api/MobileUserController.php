@@ -87,16 +87,6 @@ class MobileUserController extends Controller
         
         $sentCount = 0;
 
-        /*
-        if(!empty($tokens)){
-            $sentCount = $fcmservice->sendEmergencyAlert(
-            $tokens,
-            "EMERGENCY ALERTS",
-            "AN incident has been reported within {$radius} of your location."
-         );
-        }
-        */
-
          if(!empty($tokens)){
             $sentCount = $fcmservice->sendEmergencyAlert(
             $tokens,

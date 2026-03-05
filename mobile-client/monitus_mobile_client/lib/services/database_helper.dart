@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
     );
   }
@@ -49,7 +49,8 @@ class DatabaseHelper {
         title TEXT NOT NULL,
         body TEXT NOT NULL,
         alert_type TEXT,
-        received_at TEXT NOT NULL
+        received_at TEXT NOT NULL,
+        status TEXT DEFAULT 'active'
       )
     ''');
   }
@@ -74,6 +75,19 @@ class DatabaseHelper {
       'alerts',
       where: 'received_at < ?',
       whereArgs: [DateTime.now().subtract(const Duration(days: 14)).toString()],
+    );
+  }
+
+  // Method to Filter Resolved Alerts
+  Future<List<Map<String, dynamic>>> getActiveAlerts() async {
+    final db = await instance.database;
+
+    // We only want alerts where is_resolved is 0 (false)
+    return await db.query(
+      'alerts', 
+      where: 'status != ? OR status IS NULL', 
+      whereArgs: ['resolved'], 
+      orderBy: 'received_at DESC'
     );
   }
 }

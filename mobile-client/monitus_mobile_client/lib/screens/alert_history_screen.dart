@@ -2,25 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
 
-class AlertHistoryScreen extends StatelessWidget {
+class AlertHistoryScreen extends StatefulWidget {
   const AlertHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context){
+  State<AlertHistoryScreen> createState() => _AlertHistoryScreenState();
+
+}
+
+  class _AlertHistoryScreenState extends State<AlertHistoryScreen>{
+      // Future variable to hold data
+      late Future<List<Map<String, dynamic>>> _alertFuture;
+
+      @override
+      void initState() {
+        super.initState();
+        _loadAlerts(); // Load data on startup
+      }
+
+    // Manual Refresh Function
+    void _loadAlerts() {
+      setState(() {
+        _alertFuture = DatabaseHelper.instance.getActiveAlerts(); 
+      });
+    }
+
+    Widget build(BuildContext context){
       return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.grey[400], // Matches the grey header in your image
         elevation: 0,
         leading: const BackButton(color: Colors.black),
-        title: const Text('ALERTS', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+        title: const Text('ALERTS', 
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.settings, color: Colors.black)),
+          IconButton(
+            onPressed: _loadAlerts, 
+            icon: const Icon(Icons.refresh, color: Colors.black)),
+            IconButton(onPressed: () {}, icon: const Icon(Icons.settings, color: Colors.black)),
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: DatabaseHelper.instance.getAllAlerts(), // Pulling from Persistence Layer
+        future:_alertFuture, // Points to the state-managed  Alert Future
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -63,8 +88,9 @@ class AlertHistoryScreen extends StatelessWidget {
         ),
       ),
     );
+   }
   }
-
+  
   // Helper function to pick the icon based on 'alert_type' (WILL CUSTOMISE ALERTS LATER)
   Widget _getAlertIcon(String? type) {
     IconData iconData;
@@ -84,5 +110,5 @@ class AlertHistoryScreen extends StatelessWidget {
     );
   }
 
-}
+
 

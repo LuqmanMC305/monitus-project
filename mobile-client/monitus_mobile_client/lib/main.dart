@@ -79,6 +79,7 @@ void main() async{
           'body': message.notification?.body ?? 'No Body',
           'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
           'received_at': DateTime.now().toString(),
+          'status': 'active',
       });
         debugPrint('Alert stored to Local database.');
 

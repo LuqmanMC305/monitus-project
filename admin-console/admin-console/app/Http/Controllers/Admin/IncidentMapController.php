@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use Illuminate\Http\Request;
+use App\Services\FCMService;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+use Kreait\Firebase\Messaging\CloudMessage;
 
 class IncidentMapController extends Controller
 {
@@ -32,9 +35,31 @@ class IncidentMapController extends Controller
 
     public function resolve($id)
     {
+        // Update Server DB
         $alert = Alert::findOrFail($id);
         $alert->status = 'resolved';
         $alert->save();
+
+        // Prepare FCM Message for Mobile Client
+        $messaging = Firebase::messaging();
+
+        // Find tokens for users who were originally notified by this alert
+        // Note: Adjust 'fcm_token' to match  actual MobileUser column name
+        $tokens = \App\Models\MobileUser::whereHas('alerts', function($q) use ($id) {
+            $q->where('alert_id', $id); 
+        })->pluck('fcm_token')->filter()->toArray();
+
+        if (!empty($tokens)) {
+            $message = CloudMessage::new()
+                ->withData([
+                    'type' => 'RESOLVE_ALERT',
+                    'alert_title' => $alert->title, // Use title to match the local SQLite key
+                    'status' => 'resolved'
+                ]);
+
+            // This sends the data silently (no notification popup)
+            $messaging->sendMulticast($message, $tokens);
+    }
 
         return response()->json([
             'success' => true,
