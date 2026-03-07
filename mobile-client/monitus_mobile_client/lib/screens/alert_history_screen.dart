@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
+import 'dart:ui';
 
 class AlertHistoryScreen extends StatefulWidget {
   const AlertHistoryScreen({super.key});
@@ -61,6 +62,15 @@ class AlertHistoryScreen extends StatefulWidget {
             separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
             itemBuilder: (context, index) {
               final alert = alerts[index];
+
+              // Picking the right text
+              final currentLanguage = PlatformDispatcher.instance.locale.languageCode;
+
+              // Show translated body if the language matches
+              String displayBody = (alert['language_code'] == currentLanguage && alert['translated_body'] != null)
+                ? alert['translated_body']
+                : (alert['body'] ?? 'No message content');
+
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 leading: _getAlertIcon(alert['alert_type']), // Custom icon logic
@@ -68,10 +78,22 @@ class AlertHistoryScreen extends StatefulWidget {
                   alert['title'],
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
-                subtitle: Text(
-                  // Format the timestamp to match your design
-                  DateFormat('MMMM d, yyyy h:mm a').format(DateTime.parse(alert['received_at'])),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    // Show the potentially translated Body
+                    Text(
+                      displayBody,
+                      style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 4),
+                    // Show the Timestamp below the body
+                    Text(
+                      DateFormat('MMMM d, yyyy h:mm a').format(DateTime.parse(alert['received_at'])),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    )
+                  ]             
                 ),
               );
             },
