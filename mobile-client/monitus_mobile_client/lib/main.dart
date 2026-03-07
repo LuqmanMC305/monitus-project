@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/registration_provider.dart';
 import 'screens/registration_screen.dart';
+import 'services/translation_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:monitus_mobile_client/services/database_helper.dart';
+import 'dart:ui';
 
 // Background Service for Location Update Cycle using Workmanager
 import 'package:workmanager/workmanager.dart';
@@ -87,14 +89,27 @@ void main() async{
       if (message.notification != null) {
         _showForegroundNotification(message);
 
+        String originalBody = message.notification?.body ?? 'No Body';
+        String targetLang = PlatformDispatcher.instance.locale.languageCode; // Get phone language
+        String translatedText = originalBody; // Default to original
+
+        // Trigger Translation only if not English
+        if(targetLang != 'en'){
+          debugPrint("Translating to $targetLang...");
+          translatedText = await TranslationService().translateAlert(originalBody);
+        }
+
+
        await DatabaseHelper.instance.insertAlert({
           'title': message.notification?.title ?? 'No Title',
           'body': message.notification?.body ?? 'No Body',
+          'translated_body': translatedText, 
+          'language_code': targetLang,
           'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
           'received_at': DateTime.now().toString(),
           'status': 'active',
       });
-        debugPrint('Alert stored to Local database.');
+        debugPrint('Alert (Translated) stored to Local database.');
 
         // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
         await DatabaseHelper.instance.testDatabase();

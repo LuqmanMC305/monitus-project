@@ -48,13 +48,14 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         body TEXT NOT NULL,
+        translated_body TEXT, 
+        language_code TEXT,
         alert_type TEXT,
         received_at TEXT NOT NULL,
         status TEXT DEFAULT 'active'
       )
-    ''');
+    '''); 
   }
-
   // Method to save an incoming notification
   Future<int> insertAlert(Map<String, dynamic> alert) async {
     final db = await instance.database;
