@@ -103,4 +103,18 @@ class DatabaseHelper {
     whereArgs: [title],
   );
  }
+
+  // Method to save new translation into SQLite
+  Future<int> updateAlertTranslation(int id, String translatedBody, String langCode) async {
+    final db = await instance.database;
+    return await db.update(
+      'alerts',
+      {
+        'translated_body': translatedBody,
+        'language_code': langCode,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

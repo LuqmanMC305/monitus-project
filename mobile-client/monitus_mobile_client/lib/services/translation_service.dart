@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 class TranslationService{
   final modelManager = OnDeviceTranslatorModelManager();
 
-  Future<String> translateAlert(String text) async {
-    final String targetLangCode =PlatformDispatcher.instance.locale.languageCode;
+  Future<String> translateAlert(String text, {String? targetLanguageCode}) async {
+    final String targetLangCode = targetLanguageCode ?? PlatformDispatcher.instance.locale.languageCode;
     
     // 1. Initialise the translator directly 
     final onDeviceTranslator = OnDeviceTranslator(
@@ -18,7 +18,7 @@ class TranslationService{
       final String translatedText = await onDeviceTranslator.translateText(text);
       
       // 4. Always close the translator to prevent memory leaks
-      onDeviceTranslator.close(); 
+      await onDeviceTranslator.close(); 
       return translatedText;
     } catch (e) {
       debugPrint("Translation Error: $e");

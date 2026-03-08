@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
 import 'dart:ui';
+import '../services/translation_service.dart';
 
 class AlertHistoryScreen extends StatefulWidget {
   const AlertHistoryScreen({super.key});
@@ -14,6 +15,14 @@ class AlertHistoryScreen extends StatefulWidget {
   class _AlertHistoryScreenState extends State<AlertHistoryScreen>{
       // Future variable to hold data
       late Future<List<Map<String, dynamic>>> _alertFuture;
+
+       // Define a map for language code
+      final Map<String, String> languageLabels = {
+        'ms': 'Malay',
+        'zh': 'Chinese',
+        'ta': 'Tamil',
+        'en': 'English',
+      };
 
       @override
       void initState() {
@@ -63,13 +72,10 @@ class AlertHistoryScreen extends StatefulWidget {
             itemBuilder: (context, index) {
               final alert = alerts[index];
 
-              // Picking the right text
-              final currentLanguage = PlatformDispatcher.instance.locale.languageCode;
-
               // Show translated body if the language matches
-              String displayBody = (alert['language_code'] == currentLanguage && alert['translated_body'] != null)
-                ? alert['translated_body']
-                : (alert['body'] ?? 'No message content');
+              String displayBody = (alert['translated_body'] != null && alert['translated_body'].isNotEmpty)
+                  ? alert['translated_body']
+                  : (alert['body'] ?? 'No message content');
 
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -95,6 +101,39 @@ class AlertHistoryScreen extends StatefulWidget {
                     )
                   ]             
                 ),
+                // Trailing Popup Menu for Translation
+                trailing: PopupMenuButton<String>(
+                icon: const Icon(Icons.translate, color: Colors.blue),
+                onSelected: (String languageCode) async {
+                  // 1. Show a loading indicator, then trigger translation
+                  String newTranslation = await TranslationService().translateAlert(
+                    alert['body'], 
+                    targetLanguageCode: languageCode
+                  );
+
+                  // 2. Update the SQLite record so the choice persists
+                  await DatabaseHelper.instance.updateAlertTranslation(
+                    alert['id'], 
+                    newTranslation, 
+                    languageCode
+                  );
+
+                  // 3. Refresh the UI list
+                  _loadAlerts(); // Your method to fetch data from DB and call setState()
+                  
+                  if(mounted){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Translated to ${languageLabels[languageCode] ?? languageCode}")),
+                  );
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(value: 'en', child: Text('Original (English)')),
+                  const PopupMenuItem<String>(value: 'ms', child: Text('Malay')),
+                  const PopupMenuItem<String>(value: 'zh', child: Text('Chinese')),
+                  const PopupMenuItem<String>(value: 'ta', child: Text('Tamil')),
+                ],
+              ),
               );
             },
           );
