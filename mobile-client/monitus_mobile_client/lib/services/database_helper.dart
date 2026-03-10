@@ -71,12 +71,22 @@ class DatabaseHelper {
   // Method to delete old alerts (> 14 days)
   Future<int> deleteOldAlerts() async {
     final db = await instance.database;
-    // This deletes any alert where the 'received_at' date is older than 14 days
-    return await db.delete(
+
+    // Calculate cutoff date ()
+    final DateTime cutOffDate = DateTime.now().subtract(const Duration(days: 14));
+
+    // Use ISO8601 date & time format for reliable SQL comparison
+    final String cutoff = cutOffDate.toIso8601String();
+
+    // This deletes any alert where the 'received_at' date is older than cutoff date
+    int deletedCount = await db.delete(
       'alerts',
       where: 'received_at < ?',
-      whereArgs: [DateTime.now().subtract(const Duration(days: 14)).toString()],
+      whereArgs: [cutoff],
     );
+
+    debugPrint("Cleanup Handshake: Deleted $deletedCount old alerts.");
+    return deletedCount;
   }
 
   // Method to Filter Resolved Alerts
@@ -117,4 +127,5 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
-import 'dart:ui';
 import '../services/translation_service.dart';
 
 class AlertHistoryScreen extends StatefulWidget {
@@ -24,10 +23,22 @@ class AlertHistoryScreen extends StatefulWidget {
         'en': 'English',
       };
 
+    
+
       @override
       void initState() {
         super.initState();
-        _loadAlerts(); // Load data on startup
+        _refreshData(); // Load data on startup
+
+      }
+
+        // Helper function to handle expired alerts (NEW MASTER FUNCTION FOR ALERT REFRESH)
+      Future<void> _refreshData() async{
+        // Silent Cleanup (14-day auto-delete logic)
+        await DatabaseHelper.instance.deleteOldAlerts();
+
+        // Update UI
+        _loadAlerts();
       }
 
     // Manual Refresh Function
@@ -170,6 +181,8 @@ class AlertHistoryScreen extends StatefulWidget {
       child: Icon(iconData, color: Colors.white),
     );
   }
+
+
 
 
 
