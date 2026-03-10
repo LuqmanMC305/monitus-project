@@ -60,7 +60,7 @@ class AlertHistoryScreen extends StatefulWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _loadAlerts, 
+            onPressed: _refreshData, 
             icon: const Icon(Icons.refresh, color: Colors.black)),
             IconButton(onPressed: () {}, icon: const Icon(Icons.settings, color: Colors.black)),
         ],
