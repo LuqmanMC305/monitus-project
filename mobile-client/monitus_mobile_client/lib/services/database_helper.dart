@@ -73,10 +73,12 @@ class DatabaseHelper {
     final db = await instance.database;
 
     // Calculate cutoff date ()
-    final DateTime cutOffDate = DateTime.now().subtract(const Duration(days: 14));
+    final DateTime cutOffDate = DateTime.now().subtract(const Duration(seconds: 50));
 
     // Use ISO8601 date & time format for reliable SQL comparison
     final String cutoff = cutOffDate.toIso8601String();
+
+    debugPrint("CHECK: Deleting alerts where received_at < $cutoff");
 
     // This deletes any alert where the 'received_at' date is older than cutoff date
     int deletedCount = await db.delete(

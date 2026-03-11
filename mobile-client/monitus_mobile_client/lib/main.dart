@@ -106,7 +106,7 @@ void main() async{
           'translated_body': translatedText, 
           'language_code': targetLang,
           'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
-          'received_at': DateTime.now().toString(),
+          'received_at': DateTime.now().toIso8601String(),
           'status': 'active',
       });
         debugPrint('Alert (Translated) stored to Local database.');

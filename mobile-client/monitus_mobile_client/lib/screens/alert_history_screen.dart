@@ -28,6 +28,7 @@ class AlertHistoryScreen extends StatefulWidget {
       @override
       void initState() {
         super.initState();
+        _alertFuture = DatabaseHelper.instance.getActiveAlerts(); // Initialise the future immediately, prevent crashing
         _refreshData(); // Load data on startup
 
       }
