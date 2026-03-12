@@ -5,9 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\IncidentMapController;
 use App\Http\Controllers\Api\AlertController;
 
+// Redirect to login instead of welcome page
+Route::redirect('/', '/register');
+
+/*
 Route::get('/', function () {
     return view('welcome');
 });
+*/
 
 Route::middleware([
     'auth:sanctum',
