@@ -36,8 +36,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade, // Handle the transition
     );
   }
 
@@ -51,6 +52,9 @@ class DatabaseHelper {
         translated_body TEXT, 
         language_code TEXT,
         alert_type TEXT,
+        latitude REAL,
+        longitude REAL,
+        radius REAL,
         received_at TEXT NOT NULL,
         status TEXT DEFAULT 'active'
       )
@@ -128,6 +132,17 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // Method to migrate script to safely add new geospatial columns to existing db
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      // Add the geospatial columns to the existing table
+      await db.execute('ALTER TABLE alerts ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE alerts ADD COLUMN longitude REAL');
+      await db.execute('ALTER TABLE alerts ADD COLUMN radius REAL');
+      print("Database upgraded to Version 3: Geospatial columns added.");
+    }
   }
 
 }

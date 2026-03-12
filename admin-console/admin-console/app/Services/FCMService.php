@@ -11,7 +11,7 @@ class FCMService
 {
     protected $messaging;
 
-   public function sendEmergencyAlert($tokens, $title, $body)
+   public function sendEmergencyAlert($tokens, $title, $body, array $extraData = [])
     {
         // Accessing Messaging Instance Via Firebase Facades
         $messaging = Firebase::messaging();
@@ -26,7 +26,7 @@ class FCMService
                          'channel_id' => 'high_importance_channel', // CRITICAL: Matches your test
                     ],       
                 ])
-                ->withData(['alert_type' => 'emergency']) //
+                ->withData(array_merge(['alert_type' => 'emergency'], $extraData)) // $extraData = latitude, longitude, radius, alert_type
                 ->toToken($token);
 
             $messaging->send($message);

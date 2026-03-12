@@ -99,13 +99,19 @@ void main() async{
           translatedText = await TranslationService().translateAlert(originalBody);
         }
 
-
        await DatabaseHelper.instance.insertAlert({
           'title': message.notification?.title ?? 'No Title',
           'body': message.notification?.body ?? 'No Body',
           'translated_body': translatedText, 
           'language_code': targetLang,
           'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
+
+          // --- New Geospatial Handshake ---
+          'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
+          'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
+          'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00, //Default radius size of 500m
+          // --------------------------------
+
           'received_at': DateTime.now().toIso8601String(),
           'status': 'active',
       });
@@ -114,8 +120,6 @@ void main() async{
         // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
         await DatabaseHelper.instance.testDatabase();
       }
-
-      
     });         
   } catch (e){
     debugPrint("Firebase initialisation failed! $e");

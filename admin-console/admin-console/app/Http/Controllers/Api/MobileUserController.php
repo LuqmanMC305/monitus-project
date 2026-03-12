@@ -91,7 +91,14 @@ class MobileUserController extends Controller
             $sentCount = $fcmservice->sendEmergencyAlert(
             $tokens,
             $request->title ?? "EMERGENCY ALERT",
-            $request->instruction ?? "Incident reported within {$radius}m of your location."
+            $request->instruction ?? "Incident reported within {$radius}m of your location.",
+            // Represents $extraData inside sendEmergencyAlert function in FCMservice.php
+            [
+                'latitude' => (string)$latitude,   // Must be strings for FCM data
+                'longitude' => (string)$longitude,
+                'radius' => (string)$radius,
+                'alert_type' => $request->type ?? 'emergency',
+            ]
          );
         }
 
