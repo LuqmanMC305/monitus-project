@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:monitus_mobile_client/screens/alert_history_screen.dart';
+//import 'package:monitus_mobile_client/screens/alert_history_screen.dart';
+import 'package:monitus_mobile_client/screens/main_wrapper_screen.dart';
+//import 'package:monitus_mobile_client/screens/map_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
 
@@ -24,15 +26,21 @@ class RegistrationScreen extends StatelessWidget {
                         const Icon(Icons.check_circle, color: Colors.green, size: 40),
                         const Text("Registered Successfuly", style: TextStyle(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed:() {
-                            // Navigate to new template screen
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AlertHistoryScreen())
-                            );
-                          },
-                         child: const Text("Alert History"))
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                             ElevatedButton(
+                              onPressed:() {
+                                // Navigate to new template screen
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const MainWrapper())
+                                );
+                              },
+                              child: const Text("Enter Dashboard")
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   if (provider.errorMessage != null) Text("Error: ${provider.errorMessage}"),
