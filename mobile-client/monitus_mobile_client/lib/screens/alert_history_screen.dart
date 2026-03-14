@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
 import '../services/translation_service.dart';
+import '../services/registration_service.dart';
 
 class AlertHistoryScreen extends StatefulWidget {
   const AlertHistoryScreen({super.key});
@@ -22,8 +24,6 @@ class AlertHistoryScreen extends StatefulWidget {
         'ta': 'Tamil',
         'en': 'English',
       };
-
-    
 
       @override
       void initState() {

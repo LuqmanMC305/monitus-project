@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../services/database_helper.dart';
+import 'package:geolocator/geolocator.dart';
+import '../services/registration_service.dart';
+
 
 class AlertMapScreen extends StatefulWidget {
   const AlertMapScreen({super.key});
@@ -11,6 +14,7 @@ class AlertMapScreen extends StatefulWidget {
 }
 
 class _AlertMapScreenState extends State<AlertMapScreen> {
+  final MapController _mapController = MapController();
   late Future<List<Map<String, dynamic>>> _mapAlerts;
 
   @override
@@ -18,6 +22,21 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
     super.initState();
     // Fetch all alerts from SQLite
     _mapAlerts = DatabaseHelper.instance.getActiveAlerts(); 
+  }
+
+  // Sync current mobile user location using determinePosition inside registration_service file
+  Future<void> _syncMapToUser() async {
+    try {
+      // Use the static method from your service
+      Position position = await RegistrationService.determinePosition(); 
+
+      _mapController.move(
+        LatLng(position.latitude, position.longitude), 
+        14.0
+      );
+    } catch (e) {
+      debugPrint("Location error: $e"); 
+    }
   }
 
   @override
@@ -33,9 +52,11 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
           ).toList();
 
           return FlutterMap(
-            options: const MapOptions(
+            mapController: _mapController, //Connect the mapController
+            options: MapOptions(
               initialCenter: LatLng(3.1390, 101.6869), // Default to KL center
               initialZoom: 13.0,
+              onMapReady: () => _syncMapToUser(), // Sync location automatically when map opens
             ),
             children: [
               TileLayer(
@@ -75,6 +96,7 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
               ),
             ],
           );
+          
         },
       );
   }

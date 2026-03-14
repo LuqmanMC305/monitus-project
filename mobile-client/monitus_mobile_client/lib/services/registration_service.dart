@@ -5,7 +5,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 
-
 class RegistrationService {
 
   // Parse URL
@@ -17,9 +16,11 @@ class RegistrationService {
       String? fcmToken = await FirebaseMessaging.instance.getToken();
 
        // Fetch the Current Location 
-      Position position = await _determinePosition();
+      Position position = await determinePosition();
       double lat = position.latitude;
       double lng = position.longitude;
+
+      debugPrint("CURRENT COORDINATES: Latitude: ${lat}, Longitude: ${lng}");
 
       // Prepare Data Package
       Map<String, dynamic> data = {
@@ -48,7 +49,7 @@ class RegistrationService {
   }
     
   // Standard Geolocator permission handler
-  Future<Position> _determinePosition() async {
+  static Future<Position> determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
