@@ -7,6 +7,7 @@ use App\Models\MobileUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Services\FCMService;
 
 
@@ -52,6 +53,7 @@ class MobileUserController extends Controller
 
     public function sendAlert(Request $request, FCMService $fcmservice)
     {
+
         // 1. Validation for incoming incident data
         $validated = $request->validate([
             'latitude' => 'required|numeric',
@@ -84,32 +86,34 @@ class MobileUserController extends Controller
   
         // 4. Prepare tokens for FCM
         $tokens = $nearbyUsers->pluck('fcm_token')->filter()->toArray();
-        
-        $sentCount = 0;
 
+        // 5. Create payload explicitly
+        $payload = [
+            'latitude'   => (string) $latitude,
+            'longitude'  => (string) $longitude,
+            'radius'     => (string) $radius,
+            'alert_type' => $request->type ?? 'emergency',
+            'title'      => $request->title ?? "EMERGENCY ALERT", // Adding this for Flutter redundancy
+        ];
+
+        // Send the Alert
+        $sentCount = 0;
          if(!empty($tokens)){
             $sentCount = $fcmservice->sendEmergencyAlert(
-            $tokens,
-            $request->title ?? "EMERGENCY ALERT",
-            $request->instruction ?? "Incident reported within {$radius}m of your location.",
-            // Represents $extraData inside sendEmergencyAlert function in FCMservice.php
-            [
-                'latitude' => (string)$latitude,   // Must be strings for FCM data
-                'longitude' => (string)$longitude,
-                'radius' => (string)$radius,
-                'alert_type' => $request->type ?? 'emergency',
-            ]
+                $tokens,
+                $request->title ?? "EMERGENCY ALERT",
+                $request->instruction ?? "Incident reported within {$radius}m of your location.",
+                $payload // Pass the pre-built array above
          );
         }
-
-    
+        
         // 3. Return Success with JSON
         return response()->json([
             'status' => 'success',
             'geo_engine_found' => $nearbyUsers->count(),
             'notifications_sent' => $sentCount,
-            'users' => $nearbyUsers,
+            'debug_payload' => $payload,
+            'raw_request' => $request->all(),
         ]);
-
     }
 }

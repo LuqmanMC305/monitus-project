@@ -51,10 +51,27 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
             (alert['latitude'] ?? 0.0) != 0.0 && (alert['longitude'] ?? 0.0) != 0.0
           ).toList();
 
+          debugPrint("DEBUG: Total alerts in DB: ${snapshot.data!.length}");
+          debugPrint("DEBUG: Alerts with valid Geo: ${alertsWithGeo.length}");
+
+          if (snapshot.data!.isNotEmpty) {
+            debugPrint("DEBUG: First alert raw data: ${snapshot.data!.first}");
+            debugPrint("DEBUG: ---- DEEP DATA SCAN ---");
+            
+            final firstAlert = snapshot.data!.first;
+
+            firstAlert.forEach((key, value) {
+              debugPrint("Key: $key | Value: $value | Type: ${value.runtimeType}");
+            });
+            debugPrint("----------------------");
+
+          }
+
+
           return FlutterMap(
             mapController: _mapController, //Connect the mapController
             options: MapOptions(
-              initialCenter: LatLng(3.1390, 101.6869), // Default to KL center
+              initialCenter: LatLng(5.3767, 100.3036), // Default to Penang
               initialZoom: 13.0,
               onMapReady: () => _syncMapToUser(), // Sync location automatically when map opens
             ),
@@ -146,5 +163,12 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
         );
       },
     );
+  }
+
+    // Refresh Map Data Method
+    void _refreshMapData() {
+    setState(() {
+      _mapAlerts = DatabaseHelper.instance.getActiveAlerts();
+    });
   }
 }

@@ -15,6 +15,7 @@ class AlertController extends Controller
 {
     public function store(Request $request)
     {
+
         // 1. Validate incoming map data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -59,11 +60,22 @@ class AlertController extends Controller
         $tokens = $affectedUsers->pluck('fcm_token')->filter()->toArray();
 
         // Call the Notifier Service (Pass the dynamic data)
-        $fcmservice = app(FCMService::class); 
+        $fcmservice = app(FCMService::class);
+
+        // Prepare the data payload
+        $extraData = [
+            'latitude'   => (string)$alert->latitude,  // Matches Flutter key
+            'longitude'  => (string)$alert->longitude, // Matches Flutter key
+            'radius'     => (string)$alert->radius,
+            'alert_type' => $alert->severity,          // Or 'emergency'
+        ]; 
+
+        
         $sentCount = $fcmservice->sendEmergencyAlert(
             $tokens, 
             $alert->title, 
-            $alert->instruction
+            $alert->instruction,
+            $extraData
         );
 
         // 4. Return JSON response to Frontend (Axios Library)
@@ -74,8 +86,8 @@ class AlertController extends Controller
             'tokens_found' => $tokens, // Now you will see this in Edge!
             'debug_user_ids' => $affectedUsers->pluck('mobile_user_id'),
             'search_radius' => $alert->radius,
-            'lat' => $alert->latitude,
-            'lng' => $alert->longitude,
+            'latitude' => $alert->latitude,
+            'longitude' => $alert->longitude,
         ]);
     }
 }

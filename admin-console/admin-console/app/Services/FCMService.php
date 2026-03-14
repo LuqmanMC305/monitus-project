@@ -5,6 +5,7 @@ namespace App\Services;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Laravel\Firebase\Facades\Firebase;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\AndroidConfig;
 
 class FCMService
@@ -13,6 +14,8 @@ class FCMService
 
    public function sendEmergencyAlert($tokens, $title, $body, array $extraData = [])
     {
+        info("FCM DATA PAYLOAD:", $extraData);
+        info("TEST", $extraData);
         // Accessing Messaging Instance Via Firebase Facades
         $messaging = Firebase::messaging();
         $sentCount = 0;
