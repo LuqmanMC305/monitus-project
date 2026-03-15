@@ -87,7 +87,7 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
                     point: LatLng(alert['latitude'], alert['longitude']),
                     radius: alert['radius'] ?? 500.0,
                     useRadiusInMeter: true,
-                    color: Colors.red.withValues(alpha: 0.3), // alpha is opacity
+                    color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2), // alpha is opacity
                     borderColor: _getSeverityColor(alert['alert_type']),
                     borderStrokeWidth: 2,
                   );
@@ -121,20 +121,17 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
   // Helper method to get severity colour for alerts
   Color _getSeverityColor(String? type) {
     switch (type?.toLowerCase()) {
-      case 'emergency':
-      case 'danger':
+      case 'high':
         return Colors.red;
-      case 'warning':
-      case 'alert':
+      case 'medium':
         return Colors.orange;
-      case 'info':
-      case 'notice':
-        return Colors.blue;
+      case 'low':
+        return Colors.yellow;
       default:
         return Colors.grey; // Fallback for unknown types
     }
   }
-
+  
   // Method to show alert details
   void _showAlertDetails(Map<String, dynamic> alert) {
     showModalBottomSheet(
