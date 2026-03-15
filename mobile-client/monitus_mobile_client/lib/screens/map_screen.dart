@@ -41,59 +41,42 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-      return FutureBuilder<List<Map<String, dynamic>>>(
+    // Wrap the FutureBuilder in a Scaffold so we can add the FloatingActionButton
+    return Scaffold(
+      body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _mapAlerts,
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-          // 1. Filter out alerts that don't have GPS data (0,0)
+          // ... Your existing logic for alertsWithGeo and debugPrints ...
           final alertsWithGeo = snapshot.data!.where((alert) => 
             (alert['latitude'] ?? 0.0) != 0.0 && (alert['longitude'] ?? 0.0) != 0.0
           ).toList();
 
-          debugPrint("DEBUG: Total alerts in DB: ${snapshot.data!.length}");
-          debugPrint("DEBUG: Alerts with valid Geo: ${alertsWithGeo.length}");
-
-          if (snapshot.data!.isNotEmpty) {
-            debugPrint("DEBUG: First alert raw data: ${snapshot.data!.first}");
-            debugPrint("DEBUG: ---- DEEP DATA SCAN ---");
-            
-            final firstAlert = snapshot.data!.first;
-
-            firstAlert.forEach((key, value) {
-              debugPrint("Key: $key | Value: $value | Type: ${value.runtimeType}");
-            });
-            debugPrint("----------------------");
-
-          }
-
-
           return FlutterMap(
-            mapController: _mapController, //Connect the mapController
+            mapController: _mapController,
             options: MapOptions(
-              initialCenter: LatLng(5.3767, 100.3036), // Default to Penang
+              initialCenter: LatLng(5.3767, 100.3036),
               initialZoom: 13.0,
-              onMapReady: () => _syncMapToUser(), // Sync location automatically when map opens
+              onMapReady: () => _syncMapToUser(),
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.monitus.app',
               ),
-              // 2. Draw the impact radius circles
               CircleLayer(
                 circles: alertsWithGeo.map((alert) {
                   return CircleMarker(
                     point: LatLng(alert['latitude'], alert['longitude']),
                     radius: alert['radius'] ?? 500.0,
                     useRadiusInMeter: true,
-                    color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2), // alpha is opacity
+                    color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2),
                     borderColor: _getSeverityColor(alert['alert_type']),
                     borderStrokeWidth: 2,
                   );
                 }).toList(),
               ),
-              // Step 3: Draw the center icons
               MarkerLayer(
                 markers: alertsWithGeo.map((alert) {
                   return Marker(
@@ -113,9 +96,29 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
               ),
             ],
           );
-          
         },
-      );
+      ),
+      
+      // Refresh Button
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.redAccent,
+        onPressed: () {
+          setState(() {
+            // IMPORTANT: Re-assign the future to trigger a fresh database query
+            _mapAlerts = DatabaseHelper.instance.getActiveAlerts(); 
+          });
+          
+          // Show a tiny feedback message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Fetching latest alerts..."),
+              duration: Duration(milliseconds: 800),
+            ),
+          );
+        },
+        child: const Icon(Icons.sync, color: Colors.white),
+      ),
+    );
   }
 
   // Helper method to get severity colour for alerts
@@ -131,7 +134,7 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
         return Colors.grey; // Fallback for unknown types
     }
   }
-  
+
   // Method to show alert details
   void _showAlertDetails(Map<String, dynamic> alert) {
     showModalBottomSheet(
