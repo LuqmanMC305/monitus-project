@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 class RegistrationService {
 
   // Parse URL
-  final _apiUrl = Uri.parse('http://192.168.0.195:8000/api/register-mobile');
+  final _apiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/register-mobile');
 
   Future<void> registerUser(double? manualLat, double? manualLng) async {
     try{
@@ -36,7 +36,11 @@ class RegistrationService {
       // 4. Send the Single POST request to Laravel 
       final response = await http.post(
         _apiUrl,
-        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json', 
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+          },
         body: jsonEncode(data),
       );
 
