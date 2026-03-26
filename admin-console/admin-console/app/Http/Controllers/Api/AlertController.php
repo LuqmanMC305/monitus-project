@@ -62,7 +62,7 @@ class AlertController extends Controller
         // Call the Notifier Service (Pass the dynamic data)
         $fcmservice = app(FCMService::class);
 
-        // Prepare the data payload
+        // Prepare the data payload (READY TO FOLLOW CAP PROTOCOL)
         $extraData = [
             'latitude'   => (string)$alert->latitude,  // Matches Flutter key
             'longitude'  => (string)$alert->longitude, // Matches Flutter key
