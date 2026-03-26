@@ -78,6 +78,9 @@ class AlertController extends Controller
             $extraData
         );
 
+        // Print raw alert data on laravel log
+        info('Raw Alert Data:', $extraData);
+
         // 4. Return JSON response to Frontend (Axios Library)
         return response()->json([
             'message' => 'Alert broadcasted successfully!',
