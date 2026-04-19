@@ -70,5 +70,16 @@ class MobileUser extends Model
         )->withPivot('is_success', 'delivered_at');
     }
 
+    public function communities()
+    {
+        return $this->belongsToMany(
+            Community::class, 
+            'community_user',    
+            'community_id',   // FK
+            'mobile_user_id'  // FK 
+        )->withPivot('is_success', 'delivered_at')
+        ->withTimestamps();
+    }
+
 
 }
