@@ -8,7 +8,7 @@ class Community extends Model
 {
     public function members()
     {
-        return $this->belongsToMany(MobileUser::class, 'community_user', 'community_id', 'mobile_user_id')
+        return $this->belongsToMany(MobileUser::class, 'community_user', 'community_user_id', 'mobile_user_id')
                 ->withPivot('role')
                 ->withTimestamps();
     }
