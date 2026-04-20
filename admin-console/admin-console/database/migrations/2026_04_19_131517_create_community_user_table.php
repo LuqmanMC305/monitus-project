@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('community_user', function (Blueprint $table) {
             $table->id('community_user_id');
 
-            $table->foreignID('mobile_used_id')->constrained('mobile_users', 'mobile_user_id')->onDelete('cascade');
+            $table->foreignID('mobile_user_id')->constrained('mobile_users', 'mobile_user_id')->onDelete('cascade');
             $table->foreignID('community_id')->constrained('communities', 'community_id')->onDelete('cascade');
 
             // Attributes for Role and Audit
