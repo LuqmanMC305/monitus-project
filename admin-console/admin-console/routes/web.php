@@ -29,4 +29,6 @@ Route::middleware([
     Route::patch('api/alerts/{id}/resolve', [IncidentMapController::class, 'resolve']);
     // Manage Alerts
     Route::get('/admin/manage-alerts', [IncidentMapController::class, 'manage'])->name('admin.manage-alerts');
+    // Broadcast to Community 
+    Route::post('/broadcast/{communityID}', [AlertController::class, 'broadcastToCommunity'])->name('community.broadcast');
 });
