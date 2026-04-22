@@ -5,14 +5,37 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use App\Models\MobileUser;
+use App\Models\Community;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FCMService;
+use App\Services\TelegramService as ServicesTelegramService;
+
 
 
 
 class AlertController extends Controller
 {
+    protected $telegramService;
+
+    public function __construct(ServicesTelegramService $telegramService)
+    {
+        $this->telegramService = $telegramService;
+    }
+
+    public function broadcastToCommunity($communityId, $alertMessage)
+    {
+        // Find community
+        $community = Community::findOrFail($communityId);
+
+        // Send broadcast
+        $this->telegramService->sendCommunityAlert(
+            $community->telegram_group_id,
+            "⚠️ <b>EMERGENCY ALERT:</b>\n" . $alertMessage
+        );
+
+        return back()->with('success', 'Alert sent to ' . $community->community_name);
+    }
     public function store(Request $request)
     {
 
