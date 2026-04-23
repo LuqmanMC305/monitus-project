@@ -33,7 +33,9 @@ class MobileUser extends Model
         'device_id',
         'fcm_token',
         'last_location',
-        'last_location_at'
+        'last_location_at',
+        'telegram_chat_id',
+        'is_telegram_verified',
         ];
 
     /**

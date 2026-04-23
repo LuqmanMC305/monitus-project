@@ -8,6 +8,12 @@ class Community extends Model
 {
     protected $primaryKey = 'community_id';
 
+    protected $fillable = [
+        'community_name',
+        'telegram_group_id',
+        'community_description',
+    ];
+
     public function members()
     {
         // Arguments: Target Model, Pivot Table, Current Model FK, Target Model FK
