@@ -22,18 +22,28 @@ class AlertController extends Controller
         $this->telegramService = $telegramService;
     }
 
+    // For Manual Targeting
     public function broadcastToCommunity($communityId, $alertMessage)
     {
         // Find community
         $community = Community::findOrFail($communityId);
 
         // Send broadcast
-        $this->telegramService->sendCommunityAlert(
-            $community->telegram_group_id,
-            "⚠️ <b>EMERGENCY ALERT:</b>\n" . $alertMessage
-        );
+        try
+        {
+            $this->telegramService->sendCommunityAlert(
+                $community->telegram_group_id,
+                "📢 <b>OFFICIAL COMMUNITY ANNOUNCEMENT:</b>\n" .
+                "<b>Group:</b> " . $community->community_name . "\n\n" .
+                $alertMessage
+            );
 
-        return back()->with('success', 'Alert sent to ' . $community->community_name);
+            return back()->with('success', 'Alert sent to ' . $community->community_name);
+
+        } catch (\Exception $e){
+            return back()->with('error', 'Failed to reach Telegram: ' . $e->getMessage());
+        }
+           
     }
     public function store(Request $request)
     {
