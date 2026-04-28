@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @property int $community_id
+ * @property string $community_name
+ * @property string $telegram_group_id
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;

@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\FCMService;
 use App\Services\TelegramService as ServicesTelegramService;
 
-
-
+use function Laravel\Prompts\error;
 
 class AlertController extends Controller
 {
@@ -77,7 +76,49 @@ class AlertController extends Controller
                 'is_success' => true,
                 'delivered_at' => now(),
             ]);
+
+            // Telegram Direct Broadcast
+            // Only send if user has linked to Telegram
+            if($user->is_telegram_verified && $user->telegram_chat_id)
+                {
+                    try{
+                        $this->telegramService->sendCommunityAlert(
+                            $user->telegram_chat_id,
+                            "🚨 <b>" . strtoupper($alert->severity) . " ALERT: " . $alert->title . "</b>\n\n" .
+                            $alert->instruction
+                        );
+                    } catch(\Exception $e){
+                        info("Telegram broadcast fail for User:" . $user->mobile_user_id);
+                    }
+                }
         }
+
+        // Alert relevant communities (Community Group Sweep)
+        $affectedCommunities = Community::whereRaw(
+            "ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
+            [$alert->longitude, $alert->latitude, $alert->radius]
+        )->get();
+
+        foreach($affectedCommunities as $community)
+        {
+            if ($community->telegram_group_id)
+                {
+                    try
+                    {
+                        $this->telegramService->sendCommunityAlert(
+                            $community->telegram_group_id,
+                            "📢 <b>COMMUNITY NOTIFICATION</b>\n" .
+                            "<b>Location:</b> " . $community->community_name . "\n".
+                            "<b>Incident:</b> " . $alert->title . "\n\n" .
+                            $alert->instruction
+                        );
+                    } catch (\Exception $e){
+                        error("Community Telegram failed: " . $community->community_name);
+                    }
+                }
+        }
+            
+        
 
         // Extract Tokers from Notifier Service
         $tokens = $affectedUsers->pluck('fcm_token')->filter()->toArray();
