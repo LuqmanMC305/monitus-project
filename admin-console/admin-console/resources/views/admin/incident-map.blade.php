@@ -6,7 +6,14 @@
     </x-slot>
 
     <div class="py-12" 
-        x-data="{ open: false, lat: '', lng: '', radius: 1000 }"
+        x-data="{ 
+        open: false, 
+        lat: '', 
+        lng: '', 
+        radius: 1000
+        showSuccess: false,
+        notifiedCount: 0 
+        }"
         @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">  <!-- Alpine.js Event Listener -->
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -114,6 +121,20 @@
                              Confirm & Broadcast</button>
                         </div>
                     </div>
+                </div>
+            </div>
+            <!-- Live Map Success UI Toast (Pop-Up) -->
+            <div x-show="showSuccess" 
+                 x-transition 
+                 x-init="$watch('showSuccess', value => { if(value) setTimeout(() => showSuccess = false, 5000) })"
+                 class="fixed bottom-5 right-5 z-[10000] bg-green-600 text-white p-4 rounded-lg shadow-2xl flex items-center space-x-3"
+                 style="display: none;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <div>
+                    <p class="font-bold">Broadcast Successful!</p>
+                    <p class="text-sm">Reached <span x-text="notifiedCount"></span> active users in the zone.</p>
                 </div>
             </div>
         </div>
@@ -293,9 +314,13 @@
                 if (tableBody.children.length > 10) {
                     tableBody.lastElementChild.remove(); // Removes the absolute last row in the body
                 }
+                
+                // Update Alpine.js state for Toast
+                const alpineData = Alpine.$data(document.querySelector('[x-data]')); // Get Alpine.js data object
 
-                // Dialogue Box Pop-Up
-                alert("Alert saved! ID: " + response.data.alert_id + " | Users notified: " + response.data.notified_count); 
+                // Feed server response into Toast
+                alpineData.notifiedCount = response.data.notified_count; 
+                alpineData.showSuccess = true;
 
                 // Clean up: Clear the inputs for the next click
                 document.getElementById('modal_title').value = '';
