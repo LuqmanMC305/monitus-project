@@ -10,8 +10,10 @@
         open: false, 
         lat: '', 
         lng: '', 
-        radius: 1000
+        radius: 1000,
         showSuccess: false,
+        showError: false,
+        errorMessage: '',
         notifiedCount: 0 
         }"
         @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">  <!-- Alpine.js Event Listener -->
@@ -123,7 +125,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Live Map Success UI Toast (Pop-Up) -->
+            <!-- Success Toast (Pop-Up) -->
             <div x-show="showSuccess" 
                  x-transition 
                  x-init="$watch('showSuccess', value => { if(value) setTimeout(() => showSuccess = false, 5000) })"
@@ -135,6 +137,21 @@
                 <div>
                     <p class="font-bold">Broadcast Successful!</p>
                     <p class="text-sm">Reached <span x-text="notifiedCount"></span> active users in the zone.</p>
+                </div>
+            </div>
+            
+            <!-- Failure Toast (Pop-Up) -->
+            <div x-show="showError" 
+                x-transition 
+                x-init="$watch('showError', value => { if(value) setTimeout(() => showError = false, 5000) })"
+                class="fixed bottom-5 right-5 z-[10000] bg-red-600 text-white p-4 rounded-lg shadow-2xl flex items-center space-x-3"
+                style="display: none;">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <p class="font-bold">Broadcast Failed</p>
+                    <p class="text-sm" x-text="errorMessage"></p>
                 </div>
             </div>
         </div>
@@ -328,6 +345,16 @@
                 })
             .catch(error => {
                 console.error("The alert could not be saved:", error);
+
+                // Get Alpine.Js data object
+                const alpineData = Alpine.$data(document.querySelector('[x-data]'));
+
+                // Set Error Details
+                alpineData.errorMessage = error.response?.data?.message || "Internal Server Error. Please try again.";
+                alpineData.showError = true;
+
+                // Re-open the modal so the admin doesn't lose their text
+                alpineData.open = true;
             });
         }
         
