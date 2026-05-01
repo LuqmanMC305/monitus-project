@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @property int $id
+ * @property string $title
+ * @property float $latitude
+ * @property float $longitude
+ * @property float $radius
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;

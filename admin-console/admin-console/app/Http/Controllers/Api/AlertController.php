@@ -72,12 +72,12 @@ class AlertController extends Controller
 
         // 3. Trigger the Geo-Engine Logic 
         // (Find Users Within Radius of Recently Saved Alert)
-        $affectedUsers = MobileUser::whereRaw(
-            "ST_DWithin(last_location, ST_MakePoint(?, ?)::geography, ?)",
-            [$alert->longitude, $alert->latitude, $alert->radius]
-        )
-        ->where('updated_at', '>=', now()->subMinutes(30))
-        ->get();
+        $sql = "ST_DWithin(last_location, ST_MakePoint(?, ?)::geography, ?)";
+        $bindings = [$alert->longitude, $alert->latitude, $alert->radius];
+        
+        $affectedUsers = MobileUser::whereRaw($sql, $bindings)
+            ->where('last_location_at', '>=', now()->subMinutes(30))
+            ->get();
 
         foreach ($affectedUsers as $user)
         {
