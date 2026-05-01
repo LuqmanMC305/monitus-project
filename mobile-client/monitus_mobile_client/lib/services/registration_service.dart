@@ -3,6 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 
 
 class RegistrationService {
@@ -22,11 +26,39 @@ class RegistrationService {
 
       debugPrint("CURRENT COORDINATES: Latitude: ${lat}, Longitude: ${lng}");
 
+      // Fetch REAL USER ID from mobile storage
+      final prefs = await SharedPreferences.getInstance();
+      String realUserID = prefs.getString('saved_user_id') ?? '0';
+
+      // Initialise placeholder device ID
+      String uniqueDeviceId = "unknown_device";
+
+      try{
+         if(kIsWeb){
+          // SAFETY: Web browsers don't have a unique hardware ID unlike phones
+          uniqueDeviceId = "web_browser_client";
+          debugPrint("Running on Web: Device ID set to placeholder.");
+         } else {
+            // Get unique mobile device id
+            DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+            if(Platform.isAndroid){
+            AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+            uniqueDeviceId = androidInfo.id; 
+          } else if (Platform.isIOS){
+            IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+            uniqueDeviceId = iosInfo.identifierForVendor ?? "unknown_ios";
+          }
+        }  
+      } catch (e){
+        debugPrint("Failed to get device info: $e");
+      }
+      
       // Prepare Data Package
       Map<String, dynamic> data = {
-        'user_id': '5',
+        'user_id': realUserID,
         'fcm_token': fcmToken ?? '',
-        'device_id': 'mobile_device_001', // Ideally get a real unique ID (Hardcoded for now)
+        'device_id': uniqueDeviceId, // Ideally get a real unique ID (Hardcoded for now)
         'latitude': lat,
         'longitude': lng
       };
@@ -45,7 +77,19 @@ class RegistrationService {
       );
 
       // Print Sync Status
-      if (response.statusCode == 200 || response.statusCode == 201) debugPrint("Sync Success: Token and Location sent to Laravel");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint("Sync Success: Token and Location sent to Laravel");
+
+        // Extract ID from server's response (JSON -> String)
+        var responseData = jsonDecode(response.body);
+
+        // Save the unique user data permanently
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('saved_user_id', responseData['id'].toString());
+
+        debugPrint("Identity Saved: User ${responseData['id']} is stored persistently.");
+
+      }
       else debugPrint("Sync Failed: ${response.statusCode}"); 
 
     } catch (e) { debugPrint("Error during sync: $e"); }
