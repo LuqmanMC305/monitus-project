@@ -22,6 +22,7 @@ class MobileUserController extends Controller
         
         // 1. Request Validation
         $validated = $request->validate([
+            'user_id' => 'required|exist:users,id',
             'device_id'=> 'required|string',
             'fcm_token' => 'required|string',
             'latitude'  => 'required|numeric|between:-90,90',
@@ -31,7 +32,12 @@ class MobileUserController extends Controller
         // 2. Data Transformation & Persistence
         // We use updateOrCreate to prevent duplicate entries for the same device.
         $user = MobileUser::updateOrCreate(
-            ['device_id' => $validated['device_id']], // Unique identifier 
+            [
+                // Use both to find unique record
+                'user_id' => $validated['user_id'],
+                'device_id' => $validated['device_id'],
+
+            ], // Unique identifier 
             [
                 'fcm_token'=> $validated['fcm_token'], 
                 // Convert Lat/Long to PostGIS Geography Point
