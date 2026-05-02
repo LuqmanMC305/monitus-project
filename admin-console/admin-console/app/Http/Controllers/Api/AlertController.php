@@ -74,7 +74,6 @@ class AlertController extends Controller
         // (Find Users Within Radius of Recently Saved Alert)
         $sql = "ST_DWithin(last_location, ST_MakePoint(?, ?)::geography, ?)";
         $bindings = [$alert->longitude, $alert->latitude, $alert->radius];
-        
         $affectedUsers = MobileUser::whereRaw($sql, $bindings)
             ->where('last_location_at', '>=', now()->subMinutes(30))
             ->get();
