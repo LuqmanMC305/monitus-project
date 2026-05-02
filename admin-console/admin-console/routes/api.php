@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AppUserController;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Http\Controllers\Api\MobileUserController;
 use App\Http\Controllers\Api\AlertController;
@@ -26,6 +27,12 @@ Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
 // Send Alert 
 Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
+
+// App Users Register
+Route::post('/app-register', [AppUserController::class, 'register']);
+
+// App Users Login
+Route::post('/app-login', [AppUserController::class, 'login']);
 
 // Test Handshake
 Route::get('/test-handshake', function (App\Services\FCMService $service) {
