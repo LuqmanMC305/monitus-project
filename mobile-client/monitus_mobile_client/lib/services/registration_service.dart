@@ -5,15 +5,48 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 
 
 class RegistrationService {
+  // Endpoint 1: For creating User Account (app_users table)
+  final _accountApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-register');
 
-  // Parse URL
+  // Endpoint 2: For syncing Device data (mobile_users table)
   final _apiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/register-mobile');
 
+  Future<bool> createAccount(String name, String email, String password) async{
+    try{
+      final response = await http.post(
+        _accountApiUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 201){
+        final data =jsonDecode(response.body);
+
+        // Save app_user_id that is returned from Laravel
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('saved_user_id', data['app_user_id'].toString());
+
+        debugPrint("Account Created: User ${data['app_user_id']} saved locally. ");
+        return true;
+      }
+        return false;
+    } catch (e){
+      debugPrint("Error: $e");
+      return false;
+    }
+  }
   Future<void> registerUser(double? manualLat, double? manualLng) async {
     try{
       // Fetch the FCM Token
