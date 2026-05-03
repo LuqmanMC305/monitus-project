@@ -5,8 +5,28 @@ import 'package:monitus_mobile_client/screens/main_wrapper_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
 
-class RegistrationScreen extends StatelessWidget {
+class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
+
+    @override
+    State<RegistrationScreen> createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen>{
+  // Controllers to capture user imput
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose(){
+    // Clean up controllers when the screen is destroyed
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Access the "brain" (ViewModel)
@@ -14,43 +34,79 @@ class RegistrationScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text("Monitus Registration")),
-      body: Center(
-        child: provider.isLoading
-            ? CircularProgressIndicator() // Show spinner if loading
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (provider.isSuccess)
-                    Column(
-                      children: [
-                        const Icon(Icons.check_circle, color: Colors.green, size: 40),
-                        const Text("Registered Successfuly", style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                             ElevatedButton(
-                              onPressed:() {
-                                // Navigate to new template screen
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const MainWrapper())
-                                );
-                              },
-                              child: const Text("Enter Dashboard")
-                            ),
-                          ],
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: provider.isLoading
+            ? const CircularProgressIndicator() // Show spinner if loading
+            : SingleChildScrollView(
+              child : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (provider.isSuccess) _buildSuccessUI(context),
+                    if(!provider.isSuccess) ...[
+                        _buildTextField(_nameController, "Full Name", Icons.person),
+                        const SizedBox(height: 15),
+                        _buildTextField(_emailController, "Email Address", Icons.email),
+                        const SizedBox(height: 15),
+                        _buildTextField(_passwordController, "Password", Icons.lock, obscure: true),
+                        const SizedBox(height: 30),
+
+                        if(provider.errorMessage != null) 
+                          Text("Error: ${provider.errorMessage}", style: const TextStyle(color: Colors.red)),
+
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(minimumSize: const Size(200, 500)),
+                          onPressed:() {
+                            // Pass captured data to provider
+                            provider.handleRegistration(
+                              name: _nameController.text.trim(), 
+                              email: _emailController.text.trim(), 
+                              password: _passwordController.text.trim(),
+                            );
+                          },
+                          child: const Text("Register Account & Device"),
                         ),
-                      ],
-                    ),
-                  if (provider.errorMessage != null) Text("Error: ${provider.errorMessage}"),
-                  ElevatedButton(
-                    onPressed: () => provider.handleRegistration(),
-                    child: Text("Register Device"),
-                  ),
-                ],
-              ),
+                    ],    
+                  ],                  
+                ),
+            ),      
+          ),
+        ),
+      );
+  }
+
+  // Helper widget for a clean UI
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool obscure = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: const OutlineInputBorder(),
       ),
+    );
+  }
+
+  Widget _buildSuccessUI(BuildContext context) {
+    return Column(
+      children: [
+        const Icon(Icons.check_circle, color: Colors.green, size: 60),
+        const SizedBox(height: 10),
+        const Text("Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () {
+            // Navigate to the Dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MainWrapper()),
+            );
+          },
+          child: const Text("Enter Dashboard"),
+        ),
+      ],
     );
   }
 }
