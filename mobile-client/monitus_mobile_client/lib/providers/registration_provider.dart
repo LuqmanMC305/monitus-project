@@ -13,16 +13,30 @@ class RegistrationProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isSuccess => _isSuccess;
 
-  Future<void> handleRegistration() async {
+  // Handles the full sequence: Create Account -> Sync Device
+  Future<void> handleRegistration({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners(); // Tells the UI to show the loading spinner
 
     try {
-      await _service.registerUser(null, null);
-      _isSuccess = true;
+      // Create user account in Laravel app_users table
+      bool accountCreated = await _service.createAccount(name, email, password);
+
+      if(accountCreated){
+        // Sync hardware (FCM, GPS) to mobile_users table
+        // registerUser automatically fetches the saved_user_id from storage
+        await _service.registerUser(null, null);
+        _isSuccess = true;
+      } else {
+        _errorMessage = "Account creation failed. Please try again.";
+      }
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = "Connection error: ${e.toString()}";
     } finally {
       _isLoading = false;
       notifyListeners(); // Tells the UI to stop the spinner and show the result
