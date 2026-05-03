@@ -102,7 +102,7 @@ class AlertController extends Controller
                 }
         }
 
-        // Alert relevant communities (Community Group Sweep)
+        // Alert relevant communities (Community Group Sweep) (FIX THIS! location)
         $affectedCommunities = Community::whereRaw(
             "ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
             [$alert->longitude, $alert->latitude, $alert->radius]
