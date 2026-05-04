@@ -38,6 +38,9 @@ class RegistrationService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('saved_user_id', data['app_user_id'].toString());
 
+        // Save the "Last Activity" timestamp
+        await prefs.setInt('last_activity', DateTime.now().microsecondsSinceEpoch);
+
         debugPrint("Account Created: User ${data['app_user_id']} saved locally. ");
         return true;
       }

@@ -161,14 +161,33 @@ void main() async{
   // Check for saved mobile user identity
   final prefs = await SharedPreferences.getInstance();
   final String? savedUserId = prefs.getString('saved_user_id');
+  final int? lastActivity = prefs.getInt('last_activity');
+
+  bool sessionValid = false;
+
   debugPrint("Checking Mobile User Identity: ${savedUserId ?? 'No User Found'}");
+  if (savedUserId != null && lastActivity != null) {
+    // Timeout definition (e.g., 30 days in milliseconds)
+    const int thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+
+    if ((currentTime - lastActivity) < thirtyDays) {
+      sessionValid = true;
+      // Refresh timestamp so they get another 30 days from today
+      await prefs.setInt('last_activity', currentTime);
+    } else {
+      // Session expired: Clear the data
+      await prefs.remove('saved_user_id');
+      await prefs.remove('last_activity');
+    }
+  }
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => RegistrationProvider()),
       ],
-      child: MonitusApp(isLoggedIn: savedUserId != null),
+      child: MonitusApp(isLoggedIn: sessionValid),
     ),
   );
 }
