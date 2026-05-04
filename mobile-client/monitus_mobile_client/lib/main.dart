@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:monitus_mobile_client/screens/main_wrapper_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/registration_provider.dart';
 import 'screens/registration_screen.dart';
@@ -8,6 +9,7 @@ import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:monitus_mobile_client/services/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 
 // Background Service for Location Update Cycle using Workmanager
@@ -155,26 +157,33 @@ void main() async{
   await flutterLocalNotificationPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-  
+
+  // Check for saved mobile user identity
+  final prefs = await SharedPreferences.getInstance();
+  final String? savedUserId = prefs.getString('saved_user_id');
+  debugPrint("Checking Mobile User Identity: ${savedUserId ?? 'No User Found'}");
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => RegistrationProvider()),
       ],
-      child: const MonitusApp(),
+      child: MonitusApp(isLoggedIn: savedUserId != null),
     ),
   );
 }
 
 class MonitusApp extends StatelessWidget {
-  const MonitusApp({super.key});
+  final bool isLoggedIn;
+  const MonitusApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Monitus',
-      home: RegistrationScreen(),
+      debugShowCheckedModeBanner: false,
+      // LOGIC: If ID exists, go to MainWrapper; else, Register
+      home: isLoggedIn ? const MainWrapper() : const RegistrationScreen(),
     );
   }
 }
