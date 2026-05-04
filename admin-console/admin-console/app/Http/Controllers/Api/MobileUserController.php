@@ -18,11 +18,11 @@ class MobileUserController extends Controller
      */
     public function register(Request $request)
     {
-        Log::info("Background Update Hit!");
+        Log::info("Background Update Hit!", $request->all());
         
         // 1. Request Validation
         $validated = $request->validate([
-            'user_id' => 'required|exist:users,id',
+            'user_id' => 'required|exists:app_users,app_user_id',
             'device_id'=> 'required|string',
             'fcm_token' => 'required|string',
             'latitude'  => 'required|numeric|between:-90,90',
@@ -34,7 +34,7 @@ class MobileUserController extends Controller
         $user = MobileUser::updateOrCreate(
             [
                 // Use both to find unique record
-                'user_id' => $validated['user_id'],
+                'app_user_id' => $validated['user_id'],
                 'device_id' => $validated['device_id'],
 
             ], // Unique identifier 
@@ -51,7 +51,7 @@ class MobileUserController extends Controller
             'status' => 'success',
             'message' => 'User location synchronized successfully.',
             'data' => [
-                'user_id' => $user->mobile_user_id,
+                'id' => $user->mobile_user_id,
                 'updated_at' => $user->last_location_at->toDateTimeString()
             ]
         ], 201);

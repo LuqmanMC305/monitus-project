@@ -31,6 +31,7 @@ class MobileUser extends Model
      * Prevents MassAssignmentExceptions during registration
      */
     protected $fillable = [
+        'app_user_id',
         'device_id',
         'fcm_token',
         'last_location',

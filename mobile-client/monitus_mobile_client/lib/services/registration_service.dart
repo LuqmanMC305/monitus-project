@@ -29,7 +29,7 @@ class RegistrationService {
           'email': email,
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 201){
         final data =jsonDecode(response.body);
@@ -41,6 +41,7 @@ class RegistrationService {
         debugPrint("Account Created: User ${data['app_user_id']} saved locally. ");
         return true;
       }
+        debugPrint("SERVER ERROR BODY: ${response.body}");
         return false;
     } catch (e){
       debugPrint("Error: $e");
