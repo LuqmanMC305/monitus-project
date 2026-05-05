@@ -9,16 +9,19 @@ import 'dart:io' show Platform;
 
 
 class RegistrationService {
-  // Endpoint 1: For creating User Account (app_users table)
-  final _accountApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-register');
+  // Endpoint 1: For registering User Account (app_users table)
+  final _registerApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-register');
 
-  // Endpoint 2: For syncing Device data (mobile_users table)
+   // Endpoint 2: For login User Account (app_users table)
+  final _loginApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-login');
+
+  // Endpoint 3: For syncing Device data (mobile_users table)
   final _apiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/register-mobile');
 
   Future<bool> createAccount(String name, String email, String password) async{
     try{
       final response = await http.post(
-        _accountApiUrl,
+        _registerApiUrl,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -37,6 +40,7 @@ class RegistrationService {
         // Save app_user_id that is returned from Laravel
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('saved_user_id', data['app_user_id'].toString());
+        await prefs.setString('user_name', data['name'] ?? name);
 
         // Save the "Last Activity" timestamp
         await prefs.setInt('last_activity', DateTime.now().microsecondsSinceEpoch);
@@ -95,7 +99,7 @@ class RegistrationService {
       Map<String, dynamic> data = {
         'user_id': realUserID,
         'fcm_token': fcmToken ?? '',
-        'device_id': uniqueDeviceId, // Ideally get a real unique ID (Hardcoded for now)
+        'device_id': uniqueDeviceId, 
         'latitude': lat,
         'longitude': lng
       };
@@ -111,21 +115,17 @@ class RegistrationService {
           'ngrok-skip-browser-warning': 'true',
           },
         body: jsonEncode(data),
-      );
+      ).timeout(const Duration(seconds: 5));
 
       // Print Sync Status
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint("Sync Success: Token and Location sent to Laravel");
-
-        // Extract ID from server's response (JSON -> String)
-        var responseData = jsonDecode(response.body);
-
-        // Save the unique user data permanently
+        
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('saved_user_id', responseData['id'].toString());
+        String currentUserName = prefs.getString('user_name') ?? 'User';
 
-        debugPrint("Identity Saved: User ${responseData['id']} is stored persistently.");
-
+        debugPrint("Dashboard Check: Current user is '$currentUserName'");
+        debugPrint("Identity Saved: User $realUserID is ready for Dashboard.");
       }
       else debugPrint("Sync Failed: ${response.statusCode}"); 
 
@@ -137,7 +137,7 @@ class RegistrationService {
     try {
       // Replace with your actual Laravel login endpoint URL
       final response = await http.post(
-        Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-login'), 
+        _loginApiUrl, 
         body: {
           'email': email,
           'password': password,
@@ -147,10 +147,12 @@ class RegistrationService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final String userId = data['app_user_id'].toString();
+        final String userName = data['name'] ?? 'User';
 
-        // Persist the ID so the rest of the app knows who is logged in
+        // Persist the ID and name so the rest of the app knows who is logged in
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('saved_user_id', userId);
+        await prefs.setString('user_name', userName);
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
 
         debugPrint("Login Successful: User $userId");

@@ -15,6 +15,13 @@ class MainWrapper extends StatefulWidget {
 
 class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
+  String _userName = "User"; // Default mobile user name
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
 
   // The list of screens to toggle between
   final List<Widget> _screens = [
@@ -43,11 +50,29 @@ class _MainWrapperState extends State<MainWrapper> {
     debugPrint("Identity Cleared: User logged out.");
   }
 
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // Fetch the name we saved earlier
+      _userName = prefs.getString('user_name') ?? "User";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monitus'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Monitus'),
+            const SizedBox(width: 8),
+            Text(
+              '| $_userName', 
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
         centerTitle: true,
         actions: [
           IconButton(
