@@ -30,15 +30,16 @@ class MobileUserController extends Controller
         ]);
 
         // 2. Data Transformation & Persistence
-        // We use updateOrCreate to prevent duplicate entries for the same device.
+        // Use updateOrCreate to prevent duplicate entries for the same device.
         $user = MobileUser::updateOrCreate(
             [
-                // Use both to find unique record
-                'app_user_id' => $validated['user_id'],
+                // Find this id (WHERE clause in SQL)
                 'device_id' => $validated['device_id'],
 
-            ], // Unique identifier 
+            ], 
             [
+                // Then, fill or update these columns 
+                'app_user_id' => $validated['user_id'],
                 'fcm_token'=> $validated['fcm_token'], 
                 // Convert Lat/Long to PostGIS Geography Point
                 'last_location' => DB::raw("ST_GeogFromText('SRID=4326;POINT({$validated['longitude']} {$validated['latitude']})')"),
