@@ -3,6 +3,8 @@ import 'alert_history_screen.dart';
 import 'map_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'registration_screen.dart'; 
+import 'package:provider/provider.dart';
+import '../providers/registration_provider.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -28,6 +30,8 @@ class _MainWrapperState extends State<MainWrapper> {
     await prefs.remove('last_activity'); // Timeout logic
 
     if(!mounted) return;
+    // RESET PROVIDER STATE
+    Provider.of<RegistrationProvider>(context, listen: false).reset();
 
     // Redirect to Registration and clear navigation stack
     Navigator.pushAndRemoveUntil(

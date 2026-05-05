@@ -166,7 +166,8 @@ void main() async{
   bool sessionValid = false;
 
   debugPrint("Checking Mobile User Identity: ${savedUserId ?? 'No User Found'}");
-  if (savedUserId != null && lastActivity != null) {
+
+  if (savedUserId != null && savedUserId != "0" && lastActivity != null) {
     // Timeout definition (e.g., 30 days in milliseconds)
     const int thirtyDays = 30 * 24 * 60 * 60 * 1000;
     int currentTime = DateTime.now().millisecondsSinceEpoch;
@@ -180,7 +181,7 @@ void main() async{
       await prefs.remove('saved_user_id');
       await prefs.remove('last_activity');
     }
-  }
+  } else if (savedUserId == "0") await prefs.remove('saved_user_id'); // wipe "0"
 
   runApp(
     MultiProvider(

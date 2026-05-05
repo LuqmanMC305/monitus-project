@@ -21,6 +21,7 @@ class RegistrationProvider extends ChangeNotifier {
   }) async {
     _isLoading = true;
     _errorMessage = null;
+    _isSuccess = false;
     notifyListeners(); // Tells the UI to show the loading spinner
 
     try {
@@ -32,14 +33,26 @@ class RegistrationProvider extends ChangeNotifier {
         // registerUser automatically fetches the saved_user_id from storage
         await _service.registerUser(null, null);
         _isSuccess = true;
+        debugPrint("Identity Foundation Verified: Account created and Hardware synced.");
       } else {
         _errorMessage = "Account creation failed. Please try again.";
       }
     } catch (e) {
       _errorMessage = "Connection error: ${e.toString()}";
+      debugPrint("Registration Error: $e");
     } finally {
       _isLoading = false;
       notifyListeners(); // Tells the UI to stop the spinner and show the result
     }
   }
+  
+  void reset() {
+    _isLoading = false;
+    _errorMessage = null;
+    _isSuccess = false;
+    
+    // Tells the UI to rebuild and show the form again.
+    notifyListeners(); 
+  }
+
 }
