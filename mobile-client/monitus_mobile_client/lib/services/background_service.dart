@@ -4,6 +4,7 @@ import 'registration_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../firebase_options.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -11,6 +12,18 @@ void callbackDispatcher() {
     // This 'taskName' will be "locationUpdateTask"
     if (taskName == "locationUpdateTask") {
       try {
+        // Initialise Storage and Force a reload from disk
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.reload(); // Ensures background isolate sees the newest login
+        
+        final String? savedUserId = prefs.getString('saved_user_id');
+
+        // 2. GUARD CLAUSE: Stop if no user or "0" is found
+        if (savedUserId == null || savedUserId == "0" || savedUserId.isEmpty) {
+          debugPrint("Monitus Background: Sync blocked - No valid User ID found.");
+          return Future.value(true); // Complete task without hitting Laravel
+        }
+
         // Initialise Firebase for background isolate
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,

@@ -18,8 +18,6 @@ class MobileUserController extends Controller
      */
     public function register(Request $request)
     {
-        Log::info("Background Update Hit!", $request->all());
-        
         // 1. Request Validation
         $validated = $request->validate([
             'user_id' => 'required|exists:app_users,app_user_id',
@@ -28,6 +26,8 @@ class MobileUserController extends Controller
             'latitude'  => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
         ]);
+
+        Log::info("Background Update Hit!", $request->all());
 
         // 2. Data Transformation & Persistence
         // Use updateOrCreate to prevent duplicate entries for the same device.
