@@ -48,6 +48,7 @@ class _MainWrapperState extends State<MainWrapper> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Monitus'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

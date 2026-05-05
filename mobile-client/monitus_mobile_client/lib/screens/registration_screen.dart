@@ -51,7 +51,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
                         _buildTextField(_nameController, "Full Name", Icons.person),
                         const SizedBox(height: 15),
                         ],
-                        
+
                         // These fields stay for BOTH modes
                         _buildTextField(_emailController, "Email Address", Icons.email),
                         const SizedBox(height: 15),
@@ -116,23 +116,29 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
   }
 
   Widget _buildSuccessUI(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(Icons.check_circle, color: Colors.green, size: 60),
-        const SizedBox(height: 10),
-        Text( _isLoginMode ? "Login Successful" : "Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            // Navigate to the Dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MainWrapper()),
-            );
-          },
-          child: const Text("Enter Dashboard"),
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center, // Vertical centering
+        crossAxisAlignment: CrossAxisAlignment.center, // Horizontal child alignment
+         children: [
+           // Add top padding so it's not glued to the AppBar
+          const SizedBox(height: 100),
+          
+          const Icon(Icons.check_circle, color: Colors.green, size: 60),
+          Text( _isLoginMode ? "Login Successful" : "Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              // Navigate to the Dashboard
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MainWrapper()),
+              );
+            },
+            child: const Text("Enter Dashboard", style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
     );
   }
 }

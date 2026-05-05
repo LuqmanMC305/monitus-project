@@ -137,7 +137,7 @@ class RegistrationService {
     try {
       // Replace with your actual Laravel login endpoint URL
       final response = await http.post(
-        Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/login'), 
+        Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-login'), 
         body: {
           'email': email,
           'password': password,
