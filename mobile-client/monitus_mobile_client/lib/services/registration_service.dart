@@ -132,6 +132,38 @@ class RegistrationService {
     } catch (e) { debugPrint("Error during sync: $e"); }
       
   }
+
+  Future<bool> login(String email, String password) async {
+    try {
+      // Replace with your actual Laravel login endpoint URL
+      final response = await http.post(
+        Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/login'), 
+        body: {
+          'email': email,
+          'password': password,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final String userId = data['app_user_id'].toString();
+
+        // Persist the ID so the rest of the app knows who is logged in
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('saved_user_id', userId);
+        await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
+
+        debugPrint("Login Successful: User $userId");
+        return true;
+      } else {
+        debugPrint("Login Failed: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Login Connection Error: $e");
+      return false;
+    }
+}
     
   // Standard Geolocator permission handler
   static Future<Position> determinePosition() async {

@@ -55,4 +55,24 @@ class RegistrationProvider extends ChangeNotifier {
     notifyListeners(); 
   }
 
+  Future<void> handleLogin({required String email, required String password}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // 1. Call new login API
+      bool loginSuccess = await _service.login(email, password);
+      if (loginSuccess) {
+        // 2. Reuse existing hardware sync
+        await _service.registerUser(null, null); 
+        _isSuccess = true;
+      }
+    } catch (e) {
+      _errorMessage = "Login failed: $e";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
 }

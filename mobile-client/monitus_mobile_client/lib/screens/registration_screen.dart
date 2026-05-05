@@ -13,6 +13,8 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen>{
+  bool _isLoginMode = false;
+
   // Controllers to capture user imput
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -33,7 +35,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
     final provider = Provider.of<RegistrationProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Monitus Registration")),
+      appBar: AppBar(title: Text(_isLoginMode ? "Login" : "Registration")),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
           child: provider.isLoading
@@ -44,8 +46,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
                   children: [
                     if (provider.isSuccess) _buildSuccessUI(context),
                     if(!provider.isSuccess) ...[
+                      // Full Name text field appears only during registration
+                      if (!_isLoginMode) ...[
                         _buildTextField(_nameController, "Full Name", Icons.person),
                         const SizedBox(height: 15),
+                        ],
+                        
+                        // These fields stay for BOTH modes
                         _buildTextField(_emailController, "Email Address", Icons.email),
                         const SizedBox(height: 15),
                         _buildTextField(_passwordController, "Password", Icons.lock, obscure: true),
@@ -57,14 +64,35 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(minimumSize: const Size(70, 50)),
                           onPressed:() {
-                            // Pass captured data to provider
-                            provider.handleRegistration(
+                            // Select the correct action based on the mode
+                            if(_isLoginMode){
+                              // Pass captured login data to provider
+                              provider.handleLogin(
+                                email: _emailController.text.trim(),
+                                 password: _passwordController.text.trim(),
+                              );
+                            } else {
+                              // Pass captured registration data to provider
+                              provider.handleRegistration(
                               name: _nameController.text.trim(), 
                               email: _emailController.text.trim(), 
                               password: _passwordController.text.trim(),
                             );
+                            }
                           },
-                          child: const Text("Register Account & Device"),
+                          child: Text(_isLoginMode ? "Login" : "Register Account & Device"),
+                        ),
+
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isLoginMode = !_isLoginMode;
+                              provider.reset(); // Clear any existing errors when switching modes
+                            });
+                          },
+                          child: Text(_isLoginMode 
+                            ? "New here? Create an account" 
+                            : "Already have an account? Login"),
                         ),
                     ],    
                   ],                  
@@ -92,7 +120,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
       children: [
         const Icon(Icons.check_circle, color: Colors.green, size: 60),
         const SizedBox(height: 10),
-        const Text("Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        Text( _isLoginMode ? "Login Successful" : "Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () {

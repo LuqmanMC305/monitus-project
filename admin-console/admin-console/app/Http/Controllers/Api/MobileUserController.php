@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Services\FCMService;
+use Illuminate\Support\Facades\Auth;
 
 
 class MobileUserController extends Controller
@@ -56,6 +57,25 @@ class MobileUserController extends Controller
                 'updated_at' => $user->last_location_at->toDateTimeString()
             ]
         ], 201);
+    }
+
+    public function login (Request $request)
+    {
+        $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        ]);
+
+        // Use Auth to check credentials
+        if (Auth::attempt(['app_user_email' => $credentials['email'], 'password' => $credentials['password']])) {
+            $user = Auth::user();
+            return response()->json([
+                'status' => 'success',
+                'app_user_id' => $user->app_user_id,
+            ]);
+        }
+
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
 }

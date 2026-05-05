@@ -25,13 +25,11 @@ Route::get('/hello', function (Request $request) {
 // This maps the URL 'your-domain.com/api/register-mobile' to your controller method
 Route::post('/register-mobile', [MobileUserController::class, 'register']);
 
-// Send Alert 
+// Hardware/Telemetry Routes (Device syncing and location)
 Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
 
-// App Users Register
+// Identity Routes (Account creation and verification)
 Route::post('/app-register', [AppUserController::class, 'register']);
-
-// App Users Login
 Route::post('/app-login', [AppUserController::class, 'login']);
 
 // Test Handshake
