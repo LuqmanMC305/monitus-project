@@ -35,13 +35,12 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
     return Scaffold(
       appBar: AppBar(title: Text("Monitus Registration")),
       body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Center(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
           child: provider.isLoading
             ? const CircularProgressIndicator() // Show spinner if loading
             : SingleChildScrollView(
               child : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     if (provider.isSuccess) _buildSuccessUI(context),
                     if(!provider.isSuccess) ...[
@@ -56,7 +55,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
                           Text("Error: ${provider.errorMessage}", style: const TextStyle(color: Colors.red)),
 
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(minimumSize: const Size(200, 500)),
+                          style: ElevatedButton.styleFrom(minimumSize: const Size(70, 50)),
                           onPressed:() {
                             // Pass captured data to provider
                             provider.handleRegistration(
@@ -71,7 +70,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
                   ],                  
                 ),
             ),      
-          ),
         ),
       );
   }
