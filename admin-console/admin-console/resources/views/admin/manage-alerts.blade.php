@@ -5,11 +5,18 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12"
+        x-data="{ 
+        showSuccess: false, 
+        showError: false, 
+        errorMessage: '', 
+        successMessage: '' 
+        }"
+        @alert-resolved.window="showSuccess = true; successMessage = $event.detail.message"
+        @resolve-failed.window="showError = true; errorMessage = $event.detail.message">
+
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
             <!-- Active Alerts Table -->
-
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-bold">Currently Active Incidents</h3>
@@ -117,6 +124,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Toast Layout for Delete Alert Success/Failure -->
+        <div x-show="showSuccess" 
+            x-transition 
+            x-init="$watch('showSuccess', value => { if(value) setTimeout(() => { showSuccess = false; window.location.reload(); }, 2000) })"
+            class="fixed bottom-5 right-5 z-[10000] bg-green-600 text-white p-4 rounded-lg shadow-2xl flex items-center space-x-3"
+            style="display: none;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <div>
+                <p class="font-bold">Status Updated</p>
+                <p class="text-sm" x-text="successMessage"></p>
+            </div>
+        </div>
+        
+        <div x-show="showError" 
+            x-transition 
+            x-init="$watch('showError', value => { if(value) setTimeout(() => showError = false, 5000) })"
+            class="fixed bottom-5 right-5 z-[10000] bg-red-600 text-white p-4 rounded-lg shadow-2xl flex items-center space-x-3"
+            style="display: none;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p class="font-bold">Update Failed</p>
+                <p class="text-sm" x-text="errorMessage"></p>
+            </div>
+        </div>
     </div>
 
     <!-- Axios logic to resolve alerts -->
@@ -128,12 +164,18 @@
             // Sends PATCH request
             axios.patch(`/api/alerts/${id}/resolve`)
                 .then(response => {
-                    alert(response.data.message);
-                    window.location.reload(); // Refresh to update list
+                    // Dispatch event to show the Toast
+                    window.dispatchEvent(new CustomEvent('alert-resolved', { 
+                        detail: { message: response.data.message || 'Alert marked as resolved.' } 
+
+                        // Note: The toast's x-init will handle the page reload after 3 seconds
+                    }));
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Failed to resolve alert.');
+                    window.dispatchEvent(new CustomEvent('resolve-failed', { 
+                        detail: { message: error.response?.data?.message || 'Failed to update alert status.' } 
+                    }));
                 });
         }
     </script>
