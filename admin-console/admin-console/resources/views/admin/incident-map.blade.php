@@ -16,7 +16,10 @@
         errorMessage: '',
         notifiedCount: 0 
         }"
-        @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng">  <!-- Alpine.js Event Listener -->
+        @open-modal.window="open = true; lat = $event.detail.lat; lng = $event.detail.lng"
+        @alert-sent.window="showSuccess = true; notifiedCount = $event.detail.count; open = false"
+        @alert-failed.window="showError = true; errorMessage = $event.detail.message">
+
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <div id="map" style="height: 600px; width: 100%; border-radius: 8px; z-index: 1;"></div> <!-- Map Container -->
@@ -117,10 +120,12 @@
 
                         <div class="mt-6 flex justify-end space-x-3">
                             <button @click="open = false" type="button" class="bg-gray-200 px-4 py-2 rounded-md text-gray-700 hover:bg-gray-300">Cancel</button>
-                            <button @click="sendAlert(lat, lng, radius); open = false" 
-                             type="button" 
-                             class="bg-red-600 px-4 py-2 rounded-md text-white hover:bg-red-700">
-                             Confirm & Broadcast</button>
+
+                            <button @click="sendAlert(lat, lng, radius)"
+                                type="button" 
+                                class="bg-red-600 px-4 py-2 rounded-md text-white hover:bg-red-700">
+                                Confirm & Broadcast
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -339,12 +344,23 @@
                 alpineData.notifiedCount = response.data.notified_count; 
                 alpineData.showSuccess = true;
 
+                // DISPATCH SUCCESS EVENT
+                window.dispatchEvent(new CustomEvent('alert-sent', { 
+                    detail: { count: response.data.notified_count } 
+                }));
+
                 // Clean up: Clear the inputs for the next click
                 document.getElementById('modal_title').value = '';
                 document.getElementById('modal_instruction').value = '';
                 })
             .catch(error => {
                 console.error("The alert could not be saved:", error);
+
+                window.dispatchEvent(new CustomEvent('alert-failed', { 
+                    detail: { 
+                        message: error.response?.data?.message || "Internal Server Error. Please try again." 
+                    } 
+                }));
 
                 // Get Alpine.Js data object
                 const alpineData = Alpine.$data(document.querySelector('[x-data]'));
