@@ -18,12 +18,13 @@ class Community extends Model
         'community_name',
         'telegram_group_id',
         'community_description',
+        'community_location',
     ];
 
     public function members()
     {
-        // Arguments: Target Model, Pivot Table, Current Model FK, Target Model FK
-        return $this->belongsToMany(MobileUser::class, 'community_user', 'mobile_user_id', 'community_user_id')
+        // Target: MobileUser, Pivot: community_user, Local FK: community_id, Remote FK: mobile_user_id
+        return $this->belongsToMany(MobileUser::class, 'community_user', 'community_id', 'mobile_user_id')
                 ->withPivot('role')
                 ->withTimestamps();
     }

@@ -9,6 +9,7 @@ use App\Models\Community;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FCMService;
+use Illuminate\Support\Facades\Log;
 use App\Services\TelegramService as ServicesTelegramService;
 
 use function Laravel\Prompts\error;
@@ -97,16 +98,18 @@ class AlertController extends Controller
                             $alert->instruction
                         );
                     } catch(\Exception $e){
-                        info("Telegram broadcast fail for User:" . $user->mobile_user_id);
+                        error("Telegram Direct Fail. User: {$user->mobile_user_id}, ChatID: {$user->telegram_chat_id}. Error: " . $e->getMessage());
                     }
                 }
         }
 
         // Alert relevant communities (Community Group Sweep) (FIX THIS! location)
         $affectedCommunities = Community::whereRaw(
-            "ST_DWithin(location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
+            "ST_DWithin(community_location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
             [$alert->longitude, $alert->latitude, $alert->radius]
         )->get();
+
+        info("Broadcast Sweep: Found " . $affectedCommunities->count() . " communities within range.");
 
         foreach($affectedCommunities as $community)
         {
@@ -121,8 +124,11 @@ class AlertController extends Controller
                             "<b>Incident:</b> " . $alert->title . "\n\n" .
                             $alert->instruction
                         );
+                    } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
+                        // Log specific Telegram errors without stopping the script
+                        Log::warning("Telegram API Error for Community {$community->community_id}: " . $e->getMessage());
                     } catch (\Exception $e){
-                        error("Community Telegram failed: " . $community->community_name);
+                        error("Telegram Community Fail. Community: {$community->community_name}, GroupID: {$community->telegram_group_id}. Error: " . $e->getMessage());
                     }
                 }
         }
