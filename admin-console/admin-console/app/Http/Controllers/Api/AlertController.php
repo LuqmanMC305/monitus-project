@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FCMService;
 use Illuminate\Support\Facades\Log;
-use App\Services\TelegramService as ServicesTelegramService;
+use App\Services\TelegramService;
 
 use function Laravel\Prompts\error;
 
@@ -18,7 +18,8 @@ class AlertController extends Controller
 {
     protected $telegramService;
 
-    public function __construct(ServicesTelegramService $telegramService)
+    // Inject the Service into the Controller
+    public function __construct(TelegramService $telegramService)
     {
         $this->telegramService = $telegramService;
     }
@@ -30,19 +31,19 @@ class AlertController extends Controller
         $community = Community::findOrFail($communityId);
 
         // Send broadcast
-        try
-        {
-            $this->telegramService->sendCommunityAlert(
+        try {
+            // Pass raw data to TelegramService
+            $this->telegramService->sendManualAnnouncement(
                 $community->telegram_group_id,
-                "📢 <b>OFFICIAL COMMUNITY ANNOUNCEMENT:</b>\n" .
-                "<b>Group:</b> " . $community->community_name . "\n\n" .
+                $community->community_name,
                 $alertMessage
             );
 
             return back()->with('success', 'Alert sent to ' . $community->community_name);
 
         } catch (\Exception $e){
-            return back()->with('error', 'Failed to reach Telegram: ' . $e->getMessage());
+            Log::error("Manual Broadcast Fail: " . $e->getMessage());
+            return back()->with('error', 'Failed to reach Telegram.');
         }
            
     }
@@ -117,12 +118,10 @@ class AlertController extends Controller
                 {
                     try
                     {
-                        $this->telegramService->sendCommunityAlert(
+                        $this->telegramService->sendManualAnnouncement(
                             $community->telegram_group_id,
-                            "📢 <b>COMMUNITY NOTIFICATION</b>\n" .
-                            "<b>Location:</b> " . $community->community_name . "\n".
-                            "<b>Incident:</b> " . $alert->title . "\n\n" .
-                            $alert->instruction
+                            $community->community_name,
+                            $alert
                         );
                     } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
                         // Log specific Telegram errors without stopping the script
