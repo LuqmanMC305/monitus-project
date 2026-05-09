@@ -41,4 +41,9 @@ class Alert extends Model
         return $this->belongsToMany(MobileUser::class, 'delivery_logs', 'alert_id', 'mobile_user_id')
                     ->withPivot('is_success', 'delivered_at');
     }
+
+    public function communityBroadcasts()
+    {
+        return $this->hasMany(CommunityBroadcast::class, 'alert_id', 'alert_id');
+    }
 }
