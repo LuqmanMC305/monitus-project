@@ -18,6 +18,7 @@ class CommunityService{
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
       );
 
@@ -39,6 +40,7 @@ class CommunityService{
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
       body: jsonEncode({
         'community_id': communityId,
