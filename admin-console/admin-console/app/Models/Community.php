@@ -25,7 +25,8 @@ class Community extends Model
     {
         // Target: MobileUser, Pivot: community_user, Local FK: community_id, Remote FK: mobile_user_id
         return $this->belongsToMany(MobileUser::class, 'community_user', 'community_id', 'mobile_user_id')
-                ->withPivot('role')
+                ->using(\App\Models\CommunityUser::class)
+                ->withPivot('status','role')
                 ->withTimestamps();
     }
 }

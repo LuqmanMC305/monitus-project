@@ -89,6 +89,10 @@ class AlertController extends Controller
 
         foreach ($affectedUsers as $user)
         {
+
+            // Access the pivot data
+            $community_pivot = $user->pivot;
+            
             // Attach user to the alert
             $alert->mobileUsers()->attach($user->mobile_user_id, [
                 'is_success' => true,
@@ -97,7 +101,7 @@ class AlertController extends Controller
 
             // Telegram Direct Broadcast
             // Only send if user has linked to Telegram
-            if($user->is_telegram_verified && $user->telegram_chat_id)
+            if($user->is_telegram_verified && $user->telegram_chat_id && $community_pivot->status === 'approved')
                 {
                     try{
                         // Use helper function 'sendDirectAlert'
