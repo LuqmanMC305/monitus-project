@@ -70,6 +70,10 @@ class AlertController extends Controller
             'radius' => $validated['radius'],
             'severity' => $validated['severity'],
             'status' => 'active',
+            /* FUTURE: For Community Intelligence (Crowdsourcing)
+            'report_id' => $request->report_id ?? null, 
+            'is_community_verified' => $request->has('report_id')
+            */
         ]);
 
         // 3. Trigger the Geo-Engine Logic 
@@ -170,5 +174,22 @@ class AlertController extends Controller
             'latitude' => $alert->latitude,
             'longitude' => $alert->longitude,
         ]);
+
     }
+
+    /* FUTURE: For Community Intelligence (Crowdsourcing)
+    public function escalateReport (Request $request, $reportId)
+    {
+
+        // 1. Logic to find the original report (Assume you've created a Report model)
+        // $report = Report::findOrFail($reportId);
+
+        // 2. Reuse the existing store logic by redirecting to it
+        // or manually trigger the broadcast logic here.
+        
+        // For your FYP, it's cleaner to create a private helper function 
+        // called 'executeBroadcast($alert)' that both 'store' and 
+        // 'escalateReport' can call.
+    }
+    */
 }
