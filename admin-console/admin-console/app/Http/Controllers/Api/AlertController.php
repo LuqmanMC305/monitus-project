@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use App\Models\MobileUser;
 use App\Models\Community;
+use App\Models\CommunityBroadcast;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\FCMService;
@@ -49,6 +50,8 @@ class AlertController extends Controller
     }
     public function store(Request $request)
     {
+
+        $notifiedCount = 0;
 
         // 1. Validate incoming map data
         $validated = $request->validate([
@@ -105,7 +108,7 @@ class AlertController extends Controller
                 }
         }
 
-        // Alert relevant communities (Community Group Sweep) (FIX THIS! location)
+        // Alert relevant communities (Community Group Sweep) 
         $affectedCommunities = Community::whereRaw(
             "ST_DWithin(community_location, ST_SetSRID(ST_Point(?, ?), 4326)::geography, ?)",
             [$alert->longitude, $alert->latitude, $alert->radius]
@@ -117,19 +120,30 @@ class AlertController extends Controller
         {
             if ($community->telegram_group_id)
                 {
-                    try
-                    {
-                        $this->telegramService->sendManualAnnouncement(
+                    try {
+                            $result = $this->telegramService->sendCommunityAlert(
                             $community->telegram_group_id,
-                            $community->community_name,
-                            $alert
+                            $alert // Passing the object to the Formatter submodule
                         );
+
+                        // 2. Log the outcome using your new Model
+                        CommunityBroadcast::create([
+                            'alert_id' => $alert->alert_id,
+                            'community_id' => $community->community_id,
+                            'community_status' => $result ? 'success' : 'failed',
+                            'telegram_message_id' => $result->message_id ?? null, // Captures ID if available
+                            'error_log' => $result ? null : 'Failed to reach Telegram API',
+                        ]);
+
+                        if($result) $notifiedCount++;
+
                     } catch (\Telegram\Bot\Exceptions\TelegramResponseException $e) {
                         // Log specific Telegram errors without stopping the script
                         Log::warning("Telegram API Error for Community {$community->community_id}: " . $e->getMessage());
                     } catch (\Exception $e){
                         error("Telegram Community Fail. Community: {$community->community_name}, GroupID: {$community->telegram_group_id}. Error: " . $e->getMessage());
                     }
+
                 }
         }
             

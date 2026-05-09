@@ -7,28 +7,14 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramService
 {
-    /**
-     * Entry point for broadcasting to a community.
-     */
+    // For Automated Alerts (Takes an Object)
     public function sendCommunityAlert($groupId, $alert)
     {
         //  Message Formatter
         $formattedMessage = $this->formatAlertMessage($alert);
-
-        try {
-            //  Dispatcher
-            return Telegram::sendMessage([
-                'chat_id' => $groupId, // Ensure this contains the -100 prefix
-                'text' => $formattedMessage,
-                'parse_mode' => 'HTML'
-            ]);
-        } catch (\Exception $e) {
-            //  Error Guard (Retry Handler)
-            Log::warning("Telegram Delivery Engine failed for Chat ID {$groupId}: " . $e->getMessage());
-            return false; 
-        }
+        return $this->executeSendMessage($groupId, $formattedMessage);
+   
     }
-
     /**
      * Message Formatter
      * Converts raw alert data into a professional Telegram layout.
@@ -46,17 +32,18 @@ class TelegramService
         return "<b>{$icon} MONITUS ALERT: {$alert->title}</b>\n\n" .
                "<b>Instruction:</b>\n<i>{$alert->instruction}</i>\n\n" .
                "📍 <a href='https://monitus.app/view/{$alert->alert_id}'>View on Interactive Map</a>\n" .
-               "<small>Stay safe and follow local authority guidance.</small>";
+               "<i>Stay safe and follow local authority guidance.</i>";
     }
 
+    //  For Manual Announcements (Takes a String)
     public function sendManualAnnouncement($groupId, $communityName, $message)
     {
             $formatted = "📢 <b>OFFICIAL COMMUNITY ANNOUNCEMENT</b>\n" .
                         "<b>Group:</b> {$communityName}\n\n" .
                         $message . "\n\n" .
-                        "<small>Sent via Monitus Command Centre</small>";
+                        "<i>Sent via Monitus Command Centre</i>";
 
-            return $this->sendCommunityAlert($groupId, $formatted);
+            return $this->executeSendMessage($groupId, $formatted);
     }
 
     public function sendDirectAlert($chatId, $alert)
@@ -66,6 +53,22 @@ class TelegramService
                     "<i>Stay alert in your current location.</i>";
 
         return $this->sendCommunityAlert($chatId, $formatted);
+    }
+
+    // 3. THE DISPATCHER (Private Engine)
+    // This is the only place that actually talks to the Telegram API
+    private function executeSendMessage($groupId, $text)
+    {
+        try {
+            return Telegram::sendMessage([
+                'chat_id' => $groupId,
+                'text' => $text,
+                'parse_mode' => 'HTML'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Telegram Dispatcher Failure for Chat {$groupId}: " . $e->getMessage());
+            return false;
+        }
     }
 
     /* FUTURE FEATURE: Community-Verified Triggering (CROWDSOURCING) 

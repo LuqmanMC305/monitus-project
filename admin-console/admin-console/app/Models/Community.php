@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @property int $community_id
- * @property string $community_name
  * @property string $telegram_group_id
+ * @property string $community_name
+ * @property int $community_id
  */
 
 namespace App\Models;
