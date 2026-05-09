@@ -97,11 +97,8 @@ class AlertController extends Controller
             if($user->is_telegram_verified && $user->telegram_chat_id)
                 {
                     try{
-                        $this->telegramService->sendCommunityAlert(
-                            $user->telegram_chat_id,
-                            "🚨 <b>" . strtoupper($alert->severity) . " ALERT: " . $alert->title . "</b>\n\n" .
-                            $alert->instruction
-                        );
+                        // Use helper function 'sendDirectAlert'
+                        $this->telegramService->sendDirectAlert($user->telegram_chat_id, $alert);
                     } catch(\Exception $e){
                         error("Telegram Direct Fail. User: {$user->mobile_user_id}, ChatID: {$user->telegram_chat_id}. Error: " . $e->getMessage());
                     }
@@ -176,6 +173,7 @@ class AlertController extends Controller
         ]);
 
     }
+
 
     /* FUTURE: For Community Intelligence (Crowdsourcing)
     public function escalateReport (Request $request, $reportId)

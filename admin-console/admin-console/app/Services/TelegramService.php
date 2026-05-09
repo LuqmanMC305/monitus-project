@@ -50,14 +50,23 @@ class TelegramService
     }
 
     public function sendManualAnnouncement($groupId, $communityName, $message)
-        {
+    {
             $formatted = "📢 <b>OFFICIAL COMMUNITY ANNOUNCEMENT</b>\n" .
                         "<b>Group:</b> {$communityName}\n\n" .
                         $message . "\n\n" .
                         "<small>Sent via Monitus Command Centre</small>";
 
             return $this->sendCommunityAlert($groupId, $formatted);
-        }
+    }
+
+    public function sendDirectAlert($chatId, $alert)
+    {
+        $formatted = "🚨 <b>" . strtoupper($alert->severity) . " PERSONAL ALERT: {$alert->title}</b>\n\n" .
+                    "{$alert->instruction}\n\n" .
+                    "<i>Stay alert in your current location.</i>";
+
+        return $this->sendCommunityAlert($chatId, $formatted);
+    }
 
     /* FUTURE FEATURE: Community-Verified Triggering (CROWDSOURCING) 
     public function sendWardenVerificationRequest($wardenChatId, $report)
