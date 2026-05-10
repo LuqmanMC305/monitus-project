@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:monitus_mobile_client/screens/main_wrapper_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/registration_provider.dart';
+import 'providers/community_provider.dart';
 import 'screens/registration_screen.dart';
 import 'services/translation_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -187,6 +188,9 @@ void main() async{
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => RegistrationProvider()),
+        
+        // Ensures that the "Pending" or "Approved" states are consistent across the app
+        ChangeNotifierProvider(create: (_) => CommunityProvider()), 
       ],
       child: MonitusApp(isLoggedIn: sessionValid),
     ),

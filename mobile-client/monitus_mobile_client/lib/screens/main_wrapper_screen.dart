@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'alert_history_screen.dart';
+import 'community_list_screen.dart';
 import 'map_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'registration_screen.dart'; 
@@ -25,8 +26,9 @@ class _MainWrapperState extends State<MainWrapper> {
 
   // The list of screens to toggle between
   final List<Widget> _screens = [
-    const AlertHistoryScreen(),
-    const AlertMapScreen(),
+    const AlertHistoryScreen(), // Index 0 -> History
+    const CommunityListScreen(), // Index 1 -> New Community Discovery Screen
+    const AlertMapScreen(), // Index 2 -> Map
   ];
 
   Future<void> _handleLogout() async{
@@ -83,7 +85,12 @@ class _MainWrapperState extends State<MainWrapper> {
           ),
         ],
       ),
-      body: _screens[_selectedIndex], // Display the selected screen
+      
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ), // Display the selected screen
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -95,6 +102,10 @@ class _MainWrapperState extends State<MainWrapper> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Communities',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
