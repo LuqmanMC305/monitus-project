@@ -47,13 +47,14 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
   }
 
   Widget _buildCommunityCard(BuildContext context, CommunityProvider provider, dynamic community) {
-    // Access the first item in mobile_users list
-    final mobileUsers = community['mobile_users'] as List;
+    // 1. Access the list of users associated with this community
+    final List mobileUsers = community['mobile_users'] ?? [];
 
     String status = 'none';
     if(mobileUsers.isNotEmpty){
-        // Note: 'pivot' contains the 'status' from Laravel backend
-        status = community['pivot']?['status'] ?? 'none';
+        // SUCCESS: Reach into the first user object to find the pivot data
+        // Laravel nests it as: mobile_users -> [0] -> pivot -> status
+        status = mobileUsers[0]['pivot']?['status'] ?? 'none';
     }
     
 
@@ -70,9 +71,13 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
 
   Widget _buildStatusButton(BuildContext context, CommunityProvider provider, int id, String status) {
     if (status == 'approved') {
-      return const Chip(label: Text('Member'), backgroundColor: Colors.greenAccent);
+      return const Chip(
+        label: Text('Member'), 
+        backgroundColor: Colors.greenAccent);
     } else if (status == 'pending') {
-      return const OutlinedButton(onPressed: null, child: Text('Pending'));
+      return const Chip(
+        label: Text('Member'), 
+        backgroundColor: Colors.amber);
     } else {
       return ElevatedButton(
         onPressed: () async {
