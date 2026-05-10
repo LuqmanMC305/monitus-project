@@ -15,11 +15,17 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
                     <x-nav-link href="{{ route('incident.map') }}" :active="request()->routeIs('incident-map')">
                         {{ __('Incident Map') }}
                     </x-nav-link>
+
                     <x-nav-link href="{{ route('admin.manage-alerts') }}" :active="request()->routeIs('admin.manage-alerts')">
                         {{ __('Manage Alerts') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link href="{{ route('admin.community-approvals') }}" :active="request()->routeIs('admin.community-approvals')">
+                        {{ __('Community Approvals') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -147,6 +153,18 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+             <x-responsive-nav-link href="{{ route('incident.map') }}" :active="request()->routeIs('incident-map')">
+                {{ __('Incident Map') }}
+            </x-nav-link>
+
+            <x-responsive-nav-link href="{{ route('admin.manage-alerts') }}" :active="request()->routeIs('admin.manage-alerts')">
+                {{ __('Manage Alerts') }}
+            </x-nav-link>
+
+            <x-responsive-nav-link href="{{ route('admin.community-approvals') }}" :active="request()->routeIs('admin.community-approvals')">
+                {{ __('Community Approvals') }}
             </x-responsive-nav-link>
         </div>
 

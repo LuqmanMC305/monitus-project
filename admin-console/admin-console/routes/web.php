@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\IncidentMapController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Admin\CommunityApprovalController;
 
 // Redirect to login instead of welcome page
 Route::redirect('/', '/register');
@@ -31,4 +32,19 @@ Route::middleware([
     Route::get('/admin/manage-alerts', [IncidentMapController::class, 'manage'])->name('admin.manage-alerts');
     // Broadcast to Community 
     Route::post('/broadcast/{communityID}', [AlertController::class, 'broadcastToCommunity'])->name('community.broadcast');
+
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    // Page View
+    Route::get('/admin/community-approvals', [CommunityApprovalController::class, 'index'])
+         ->name('admin.community-approvals');
+
+    // Approve Users
+    Route::post('/admin/community-approvals/{user}/{community}/approve', [CommunityApprovalController::class, 'approve'])
+         ->name('admin.community-approvals.approve');
+    
+    // Reject Users
+    // Reject Action (Recommended to add this now)
+    Route::post('/admin/community-approvals/{user}/{community}/reject', [CommunityApprovalController::class, 'reject'])
+        ->name('admin.community-approvals.reject');
+});
 });

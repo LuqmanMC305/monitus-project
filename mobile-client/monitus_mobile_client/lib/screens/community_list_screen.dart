@@ -47,8 +47,15 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
   }
 
   Widget _buildCommunityCard(BuildContext context, CommunityProvider provider, dynamic community) {
-    // Note: 'pivot' contains the 'status' from your Laravel backend
-    String status = community['pivot']?['status'] ?? 'none';
+    // Access the first item in mobile_users list
+    final mobileUsers = community['mobile_users'] as List;
+
+    String status = 'none';
+    if(mobileUsers.isNotEmpty){
+        // Note: 'pivot' contains the 'status' from Laravel backend
+        status = community['pivot']?['status'] ?? 'none';
+    }
+    
 
     return Card(
       elevation: 3,

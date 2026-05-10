@@ -37,6 +37,9 @@ Route::post('/app-login', [AppUserController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     // This connects your Flutter 'joinCommunity' call to the logic
     Route::post('/communities/join', [CommunityController::class, 'join']);
+
+    // Fetch list of communities
+    Route::get('/communities', [CommunityController::class, 'index']);
 });
 
 // Test Handshake
