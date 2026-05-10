@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AppUserController;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Http\Controllers\Api\MobileUserController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\CommunityController;
 use App\Models\MobileUser;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
@@ -31,6 +32,12 @@ Route::post('/send-alert', [MobileUserController::class, 'sendAlert']);
 // Identity Routes (Account creation and verification)
 Route::post('/app-register', [AppUserController::class, 'register']);
 Route::post('/app-login', [AppUserController::class, 'login']);
+
+// Allow mobile users join communities
+Route::middleware('auth:sanctum')->group(function () {
+    // This connects your Flutter 'joinCommunity' call to the logic
+    Route::post('/communities/join', [CommunityController::class, 'join']);
+});
 
 // Test Handshake
 Route::get('/test-handshake', function (App\Services\FCMService $service) {
