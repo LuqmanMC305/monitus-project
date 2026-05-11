@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use Illuminate\Http\Request;
 use App\Services\FCMService;
+use App\Models\Community;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use Kreait\Firebase\Messaging\CloudMessage;
 
@@ -20,8 +21,13 @@ class IncidentMapController extends Controller
                         ->latest()
                         ->take($latestNum)
                         ->get();
+        
+        $communities = Community::all();
 
-        return view('admin.incident-map', compact('alerts'));
+        return view('admin.incident-map', 
+            compact('alerts'),
+            compact('communities')
+        );
 
         /*
         $alerts = Alert::latest()->take($latestNum)->get();
