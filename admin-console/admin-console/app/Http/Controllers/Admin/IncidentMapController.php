@@ -60,6 +60,7 @@ class IncidentMapController extends Controller
                 ->withData([
                     'type' => 'RESOLVE_ALERT',
                     'alert_title' => $alert->title, // Use title to match the local SQLite key
+                    'alert_id' => (string)$alert->alert_id,
                     'status' => 'resolved'
                 ]);
 
@@ -69,7 +70,7 @@ class IncidentMapController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Alert has been resolved and removed from the map.'
+            'message' => 'Alert ' . $id . ' has been resolved and signal sent to mobile clients.'
         ]);
     }
 

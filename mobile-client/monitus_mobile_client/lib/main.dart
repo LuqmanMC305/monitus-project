@@ -72,20 +72,22 @@ void main() async{
 
     // Foreground Listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      debugPrint("FULL MESSAGE DATA: ${message.data}");
       debugPrint("--- SOMETHING ARRIVED ---");
       
       // Check the "Silent" Resolve Signal first
       if (message.data['type'] == 'RESOLVE_ALERT') {
-        String title = message.data['alert_title'] ?? '';
+        // Get the unique ID from the message
+        String? alertId = message.data['alert_id']; 
         
-        // Update the local SQLite database status
-        await DatabaseHelper.instance.updateAlertStatusByTitle(title, 'resolved');
+        if (alertId != null) {
+            // Use ID-based update instead of Title-based
+            await DatabaseHelper.instance.updateAlertStatusById(int.parse(alertId), 'resolved');
         
-        debugPrint("UI Handshake: Alert '$title' hidden from list.");
-        return; // Stop here so no notification is shown for a resolve signal
+            debugPrint("UI Handshake: Alert ID $alertId marked as resolved.");
+        }
+        return; 
   }
-
-
       // Start of the standard alert logic (notification + insertation)
       debugPrint('Foreground message received: ${message.notification?.title}');
 

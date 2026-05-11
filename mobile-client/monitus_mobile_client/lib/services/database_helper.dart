@@ -77,7 +77,7 @@ class DatabaseHelper {
     final db = await instance.database;
 
     // Calculate cutoff date ()
-    final DateTime cutOffDate = DateTime.now().subtract(const Duration(seconds: 50));
+    final DateTime cutOffDate = DateTime.now().subtract(const Duration(days: 14));
 
     // Use ISO8601 date & time format for reliable SQL comparison
     final String cutoff = cutOffDate.toIso8601String();
@@ -133,6 +133,16 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  Future<int> updateAlertStatusById(int id, String status) async {
+    final db = await instance.database;
+    return await db.update(
+        'alerts',
+        {'status': status},
+        where: 'id = ?', // Matches primary key
+        whereArgs: [id],
+    );
+}
 
   // Method to migrate script to safely add new geospatial columns to existing db
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {

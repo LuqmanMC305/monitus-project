@@ -44,12 +44,16 @@ class AlertHistoryScreen extends StatefulWidget {
 
     // Manual Refresh Function
     void _loadAlerts() {
+      print("RELOADING ALERTS");
+
       setState(() {
         _alertFuture = DatabaseHelper.instance.getActiveAlerts(); 
       });
     }
 
     Widget build(BuildContext context) {
+      print("BUILD TRIGGERED");
+
       return FutureBuilder<List<Map<String, dynamic>>>(
         future: _alertFuture, 
         builder: (context, snapshot) {
