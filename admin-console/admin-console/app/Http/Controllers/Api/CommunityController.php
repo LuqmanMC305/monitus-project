@@ -5,16 +5,24 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Community;
+use App\Models\MobileUser;
 
 class CommunityController extends Controller
 {
     public function join(Request $request) {
-        $user = $request->user(); // Get the authenticated mobile user
+        $appUser = $request->user(); 
         $communityId = $request->community_id;
+
+        // 1. Hop from AppUser (20) to MobileUser (7)
+        $mobileUser = MobileUser::where('app_user_id', $appUser->app_user_id)->first();
+
+        if (!$mobileUser) {
+        return response()->json(['message' => 'Mobile profile not found'], 404);
+        }
 
         // Attach the user to the community with a 'pending' status
         // syncWithoutDetaching prevents duplicate entries if they click twice
-        $user->communities()->syncWithoutDetaching([
+        $mobileUser->communities()->syncWithoutDetaching([
             $communityId => ['status' => 'pending', 'role' => 'resident']
         ]);
 
@@ -27,12 +35,16 @@ class CommunityController extends Controller
     public function index (Request $request)
     {
         // Display all communities list
-        $user = $request->user();
+        $appUser = $request->user();
+
+        // Again, find the MobileUser ID first
+        $mobileUser = MobileUser::where('app_user_id', $appUser->app_user_id)->first();
+        $mobileId = $mobileUser ? $mobileUser->mobile_user_id : null;
 
         // We fetch all communities, but ONLY attach the pivot data for the logged-in user
         // This tells Flutter if the user is already 'pending' or 'approved'
-        $communities = Community::with(['mobileUsers' => function ($query) use ($user) {
-            $query->where('mobile_user_id', $user->id);
+        $communities = Community::with(['mobileUsers' => function ($query) use ($mobileId) {
+            $query->where('mobile_user_id', $mobileId->id);
         }])->get();
 
         return response()->json([

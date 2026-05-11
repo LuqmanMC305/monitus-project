@@ -60,11 +60,21 @@ class AppUserController extends Controller
             ], 401);
         }
 
+        // Create a new token for this session
+        $token = $user->createToken('mobile-app-token')->plainTextToken;
+
+        // Fetch the Mobile User ID (The missing link for your pivot table)
+        // This finds ID 7 for Egal (app_user_id 20)
+        $mobileUser = \App\Models\MobileUser::where('app_user_id', $user->app_user_id)->first();
+
         // Return the app_user_id so the phone can save it
         return response()->json
         ([
             'message' => 'Login successful',
-            'app_user_id' => $user->app_user_id,
+            'access_token' => $token, // THIS IS WHAT YOU ARE MISSING
+            'token_type' => 'Bearer',
+            'app_user_id' => $user->app_user_id, // ID 20
+            'mobile_user_id' => $mobileUser ? $mobileUser->mobile_user_id : null, // ID 7
             'name' => $user->app_user_name
         ], 200);
 

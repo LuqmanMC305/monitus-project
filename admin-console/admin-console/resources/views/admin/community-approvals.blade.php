@@ -30,14 +30,14 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($pendingRequests as $request)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->communities->firstWhere('id', $request->pivot->community_id)->community_name ?? 'Unknown' }}</td> 
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->pivot->created_at }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->appUser->app_user_name ?? 'Unknown User' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $request->communities->first()?->community_name ?? 'Unknown Community' }}</td> 
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $request->communities->first()?->pivot->created_at?->format('d M Y, H:i') ?? 'N/A' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 
                                     <form action="{{ route('admin.community-approvals.approve', [
-                                        'user' => $request->id, 
-                                        'community' => $request->pivot->community_id]) 
+                                        'user' => $request->mobile_user_id, 
+                                        'community' => $request->communities->first()->community_id]) 
                                     }}" method="POST" class="inline">
                                         @csrf
                                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md transition ease-in-out duration-150 mr-2">

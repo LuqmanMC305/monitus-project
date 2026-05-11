@@ -77,9 +77,13 @@ class MobileUser extends Model
     public function communities()
     {
         return $this->belongsToMany(Community::class, 'community_user', 'mobile_user_id', 'community_id')
-                    ->withPivot('role')
+                    ->withPivot('status','role')
                     ->withTimestamps();
         
+    }
+
+    public function appUser() {
+        return $this->belongsTo(AppUser::class, 'app_user_id', 'app_user_id');
     }
 
 

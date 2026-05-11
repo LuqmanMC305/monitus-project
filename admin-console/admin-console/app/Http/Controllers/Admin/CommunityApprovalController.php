@@ -13,8 +13,13 @@ class CommunityApprovalController extends Controller
     {
         // Fetch users who have a 'pending' status in the community_user pivot table
         $pendingRequests = MobileUser::whereHas('communities', function ($query) {
+            // This part filters the list to only show users with pending requests
             $query->where('community_user.status', 'pending');
-        })->with('communities')->get();
+        })->with(['appUser','communities' => function ($query) {
+            // This part ensures that only the 'pending' relationship data is 
+            // attached to the pivot object for the Blade file to read
+            $query->wherePivot('status', 'pending');
+        }])->get();
 
         // Returns the Blade file we discussed earlier
         return view('admin.community-approvals', compact('pendingRequests'));
