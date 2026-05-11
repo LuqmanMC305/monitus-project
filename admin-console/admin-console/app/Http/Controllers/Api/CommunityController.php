@@ -44,7 +44,7 @@ class CommunityController extends Controller
         // We fetch all communities, but ONLY attach the pivot data for the logged-in user
         // This tells Flutter if the user is already 'pending' or 'approved'
         $communities = Community::with(['mobileUsers' => function ($query) use ($mobileId) {
-            $query->where('mobile_user_id', $mobileId->id);
+            $query->where('community_user.mobile_user_id', $mobileId);
         }])->get();
 
         return response()->json([

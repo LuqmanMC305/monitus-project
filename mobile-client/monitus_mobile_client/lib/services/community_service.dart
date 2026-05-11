@@ -13,7 +13,10 @@ class CommunityService{
       final prefs = await SharedPreferences.getInstance();
 
       // Use 'auth-token' to match your Login code
-      final token = prefs.getString('auth_token');
+      final token = prefs.getString('auth-token');
+
+      // DEBUG: Check your terminal. If this says 'null', your login failed to save it.
+      print('--- SENDING TOKEN: $token ---');
 
       final response = await http.get(
         Uri.parse('$baseUrl/communities'), 

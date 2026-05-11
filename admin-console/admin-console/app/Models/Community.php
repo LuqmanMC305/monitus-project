@@ -21,7 +21,7 @@ class Community extends Model
         'community_location',
     ];
 
-    public function members()
+    public function mobileUsers()
     {
         // Target: MobileUser, Pivot: community_user, Local FK: community_id, Remote FK: mobile_user_id
         return $this->belongsToMany(MobileUser::class, 'community_user', 'community_id', 'mobile_user_id')

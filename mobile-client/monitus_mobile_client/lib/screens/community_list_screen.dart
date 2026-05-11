@@ -63,8 +63,8 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(community['community_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(community['description'] ?? 'Stay updated with local alerts.'),
-        trailing: _buildStatusButton(context, provider, community['id'], status),
+        subtitle: Text(community['community_description'] ?? 'Stay updated with local alerts.'),
+        trailing: _buildStatusButton(context, provider, community['community_id'], status),
       ),
     );
   }

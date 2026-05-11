@@ -71,7 +71,7 @@ class AppUserController extends Controller
         return response()->json
         ([
             'message' => 'Login successful',
-            'access_token' => $token, // THIS IS WHAT YOU ARE MISSING
+            'access_token' => $token, 
             'token_type' => 'Bearer',
             'app_user_id' => $user->app_user_id, // ID 20
             'mobile_user_id' => $mobileUser ? $mobileUser->mobile_user_id : null, // ID 7

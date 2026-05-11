@@ -137,7 +137,11 @@ class RegistrationService {
     try {
       // Replace with your actual Laravel login endpoint URL
       final response = await http.post(
-        _loginApiUrl, 
+        _loginApiUrl,
+        headers: {
+          'Accept': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        }, 
         body: {
           'email': email,
           'password': password,
@@ -150,7 +154,8 @@ class RegistrationService {
         final String userName = data['name'] ?? 'User';
         
         // Save Mobile User Token for Auth
-        final String token = data['access-token'];
+        final String token = data['access_token'];
+        debugPrint("Token is: ${token}");
 
         // Persist the ID and name so the rest of the app knows who is logged in
         final prefs = await SharedPreferences.getInstance();
