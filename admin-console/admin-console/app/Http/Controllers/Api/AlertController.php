@@ -26,10 +26,16 @@ class AlertController extends Controller
     }
 
     // For Manual Targeting
-    public function broadcastToCommunity($communityId, $alertMessage)
+    public function broadcastToCommunity(Request $request)
     {
+        // Validate the input from your form
+        $validated = $request->validate([
+            'community_id' => 'required|exists:communities,community_id',
+            'message' => 'required|string|max:500',
+        ]);
+
         // Find community
-        $community = Community::findOrFail($communityId);
+        $community = Community::findOrFail($validated['community_id']);
 
         // Send broadcast
         try {
@@ -37,10 +43,10 @@ class AlertController extends Controller
             $this->telegramService->sendManualAnnouncement(
                 $community->telegram_group_id,
                 $community->community_name,
-                $alertMessage
+                $validated['message']
             );
 
-            return back()->with('success', 'Alert sent to ' . $community->community_name);
+            return back()->with('success', 'Announcement sent to ' . $community->community_name);
 
         } catch (\Exception $e){
             Log::error("Manual Broadcast Fail: " . $e->getMessage());

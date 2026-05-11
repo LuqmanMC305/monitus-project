@@ -46,5 +46,8 @@ Route::middleware([
     // Reject Action (Recommended to add this now)
     Route::post('/admin/community-approvals/{user}/{community}/reject', [CommunityApprovalController::class, 'reject'])
         ->name('admin.community-approvals.reject');
+
+    Route::post('/admin/community-broadcast', [AlertController::class, 'broadcastToCommunity'])
+    ->name('admin.community.broadcast');
 });
 });

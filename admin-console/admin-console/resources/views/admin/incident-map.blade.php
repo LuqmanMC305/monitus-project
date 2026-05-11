@@ -65,8 +65,40 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div> 
+                
+                <div class="mt-10 bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-600">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <span class="mr-2">📢</span> Official Community Announcement
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4 italic">
+                        Use this to send non-emergency updates to specific Telegram groups.
+                    </p>
+                    
+                    <form action="{{ route('admin.community.broadcast') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Target Community</label>
+                                <select name="community_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    @foreach($communities as $community)
+                                        <option value="{{ $community->community_id }}">{{ $community->community_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Message Content</label>
+                                <textarea name="message" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your announcement here..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md font-bold hover:bg-blue-700 transition shadow-lg">
+                                Broadcast to Telegram
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </div>
 
             <!-- Broadcast Model Pop-Up for Alert Fill-in Form -->
             <div x-show="open" 
