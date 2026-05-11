@@ -148,12 +148,20 @@ class RegistrationService {
         final data = json.decode(response.body);
         final String userId = data['app_user_id'].toString();
         final String userName = data['name'] ?? 'User';
+        
+        // Save Mobile User Token for Auth
+        final String token = data['access-token'];
 
         // Persist the ID and name so the rest of the app knows who is logged in
         final prefs = await SharedPreferences.getInstance();
+
+        // Save the token so CommunityService can find it
+        await prefs.setString('auth-token', token);
+
         await prefs.setString('saved_user_id', userId);
         await prefs.setString('user_name', userName);
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
+        
 
         debugPrint("Login Successful: User $userId");
         return true;

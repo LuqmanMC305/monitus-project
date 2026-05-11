@@ -5,12 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class CommunityService{
-    // Replace with your actual local/production IP
-    final url = Uri.parse('http://your-api-url/api/communities/join');
+    // Replace with  actual local/production IP
+    final String baseUrl = 'https://adria-vexatious-unrigidly.ngrok-free.dev/api';
 
     // Fetch available communities (for the Discovery Screen)
     Future<List<dynamic>> fetchCommunities() async {
       final prefs = await SharedPreferences.getInstance();
+
+      // Use 'auth-token' to match your Login code
       final token = prefs.getString('auth_token');
 
       final response = await http.get(
@@ -25,14 +27,18 @@ class CommunityService{
       if (response.statusCode == 200) {
         return jsonDecode(response.body)['data'];
       } else {
+        print(response.statusCode);
         throw Exception('Failed to load communities');
+        
       }
     }
 
     // The Join Request logic
   Future<Map<String, dynamic>> joinCommunity(int communityId) async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+
+    // Use 'auth-token' to match your Login code
+    final token = prefs.getString('auth-token');
 
     final response = await http.post(
       Uri.parse('$baseUrl/communities/join'),
