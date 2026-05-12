@@ -51,6 +51,7 @@ class AlertHistoryScreen extends StatefulWidget {
       });
     }
 
+    @override
     Widget build(BuildContext context) {
       print("BUILD TRIGGERED");
 
@@ -60,72 +61,90 @@ class AlertHistoryScreen extends StatefulWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
+          // Handle the case where no alerts are found
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No alerts found."));
+            return RefreshIndicator(
+              onRefresh: _refreshData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(), // Ensures pull-to-refresh works when empty
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text("No alerts found.")),
+                ],
+              ),
+            );
           }
 
           final alerts = snapshot.data!;
 
-          return ListView.separated(
-            itemCount: alerts.length,
-            separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
-            itemBuilder: (context, index) {
-              final alert = alerts[index];
+          // Handle the active alert list
+          return RefreshIndicator(
+            onRefresh: _refreshData,
+            color: Colors.blueAccent,
+            child: ListView.separated(
+              // AlwaysScrollableScrollPhysics ensures the gesture works even for short lists
+              physics: const AlwaysScrollableScrollPhysics(), 
+              itemCount: alerts.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
+              itemBuilder: (context, index) {
+                final alert = alerts[index];
 
-              String displayBody = (alert['translated_body'] != null && alert['translated_body'].isNotEmpty)
-                  ? alert['translated_body']
-                  : (alert['body'] ?? 'No message content');
+                String displayBody = (alert['translated_body'] != null && alert['translated_body'].isNotEmpty)
+                    ? alert['translated_body']
+                    : (alert['body'] ?? 'No message content');
 
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: _getAlertIcon(alert['alert_type']),
-                title: Text(
-                  alert['title'],
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text(displayBody, style: const TextStyle(fontSize: 13, color: Colors.black87)),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat('MMMM d, yyyy h:mm a').format(DateTime.parse(alert['received_at'])),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    )
-                  ]
-                ),
-                trailing: PopupMenuButton<String>(
-                  icon: const Icon(Icons.translate, color: Colors.blue),
-                  onSelected: (String languageCode) async {
-                    String newTranslation = await TranslationService().translateAlert(
-                      alert['body'], 
-                      targetLanguageCode: languageCode
-                    );
-
-                    await DatabaseHelper.instance.updateAlertTranslation(
-                      alert['id'], 
-                      newTranslation, 
-                      languageCode
-                    );
-
-                    _loadAlerts(); 
-                    
-                    if(mounted){
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Translated to ${languageLabels[languageCode] ?? languageCode}")),
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: _getAlertIcon(alert['alert_type']),
+                  title: Text(
+                    alert['title'],
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(displayBody, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat('MMMM d, yyyy h:mm a').format(DateTime.parse(alert['received_at'])),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      )
+                    ],
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.translate, color: Colors.blue),
+                    onSelected: (String languageCode) async {
+                      String newTranslation = await TranslationService().translateAlert(
+                        alert['body'], 
+                        targetLanguageCode: languageCode
                       );
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(value: 'en', child: Text('Original (English)')),
-                    const PopupMenuItem<String>(value: 'ms', child: Text('Malay')),
-                    const PopupMenuItem<String>(value: 'zh', child: Text('Chinese')),
-                    const PopupMenuItem<String>(value: 'ta', child: Text('Tamil')),
-                  ],
-                ),
-              );
-            },
+
+                      await DatabaseHelper.instance.updateAlertTranslation(
+                        alert['id'], 
+                        newTranslation, 
+                        languageCode
+                      );
+
+                      _loadAlerts(); 
+                      
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Translated to ${languageLabels[languageCode] ?? languageCode}")),
+                        );
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(value: 'en', child: Text('Original (English)')),
+                      const PopupMenuItem<String>(value: 'ms', child: Text('Malay')),
+                      const PopupMenuItem<String>(value: 'zh', child: Text('Chinese')),
+                      const PopupMenuItem<String>(value: 'ta', child: Text('Tamil')),
+                    ],
+                  ),
+                );
+              },
+            ),
           );
         },
       );

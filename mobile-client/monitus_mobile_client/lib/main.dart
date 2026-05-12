@@ -80,13 +80,18 @@ void main() async{
         // Get the unique ID from the message
         String? alertId = message.data['alert_id']; 
         
-        if (alertId != null) {
-            // Use ID-based update instead of Title-based
-            await DatabaseHelper.instance.updateAlertStatusById(int.parse(alertId), 'resolved');
+      if (message.data['type'] == 'RESOLVE_ALERT') {
+        // 1. Extract the title from the FCM data
+        String? alertTitle = message.data['alert_title']; 
         
-            debugPrint("UI Handshake: Alert ID $alertId marked as resolved.");
+        if (alertTitle != null) {
+            // 2. Use the Title-based method you already have in DatabaseHelper
+            await DatabaseHelper.instance.updateAlertStatusByTitle(alertTitle, 'resolved');
+        
+            debugPrint("Handshake: Title '$alertTitle' successfully marked as resolved in SQLite.");
         }
         return; 
+    }
   }
       // Start of the standard alert logic (notification + insertation)
       debugPrint('Foreground message received: ${message.notification?.title}');
