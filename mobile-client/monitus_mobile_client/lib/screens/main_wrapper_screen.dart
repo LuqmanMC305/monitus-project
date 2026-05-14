@@ -101,7 +101,7 @@ class _MainWrapperState extends State<MainWrapper> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: 'History',
+            label: 'Alert List',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
