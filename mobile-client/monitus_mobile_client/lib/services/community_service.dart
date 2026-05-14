@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CommunityService{
     // Replace with  actual local/production IP
-    final String baseUrl = 'https://adria-vexatious-unrigidly.ngrok-free.dev/api';
+    final String baseUrl = 'https://monitus-laravel-backend-49hltibe.on-forge.com/api';
 
     // Fetch available communities (for the Discovery Screen)
     Future<List<dynamic>> fetchCommunities() async {

@@ -10,13 +10,13 @@ import 'dart:io' show Platform;
 
 class RegistrationService {
   // Endpoint 1: For registering User Account (app_users table)
-  final _registerApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-register');
+  final _registerApiUrl = Uri.parse('https://monitus-laravel-backend-49hltibe.on-forge.com/api/app-register');
 
    // Endpoint 2: For login User Account (app_users table)
-  final _loginApiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/app-login');
+  final _loginApiUrl = Uri.parse('https://monitus-laravel-backend-49hltibe.on-forge.com/api/app-login');
 
   // Endpoint 3: For syncing Device data (mobile_users table)
-  final _apiUrl = Uri.parse('https://adria-vexatious-unrigidly.ngrok-free.dev/api/register-mobile');
+  final _apiUrl = Uri.parse('https://monitus-laravel-backend-49hltibe.on-forge.com/api/register-mobile');
 
   Future<bool> createAccount(String name, String email, String password) async{
     try{
