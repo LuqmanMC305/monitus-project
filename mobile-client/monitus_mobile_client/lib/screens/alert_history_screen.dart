@@ -28,27 +28,28 @@ class AlertHistoryScreen extends StatefulWidget {
       @override
       void initState() {
         super.initState();
-        _alertFuture = DatabaseHelper.instance.getActiveAlerts(); // Initialise the future immediately, prevent crashing
-        _refreshData(); // Load data on startup
-
+        _alertFuture = _refreshData();  // Initialise by calling the combined cleanup and fetch logic
       }
 
         // Helper function to handle expired alerts (NEW MASTER FUNCTION FOR ALERT REFRESH)
-      Future<void> _refreshData() async{
+      Future<List<Map<String, dynamic>>> _refreshData() async{
         // Silent Cleanup (14-day auto-delete logic)
         await DatabaseHelper.instance.deleteOldAlerts();
 
-        // Update UI
-        _loadAlerts();
+        // Fetch the fresh list and return it directly
+        return DatabaseHelper.instance.getActiveAlerts();
       }
 
     // Manual Refresh Function
-    void _loadAlerts() {
+    Future<void> _loadAlerts() async {
       print("RELOADING ALERTS");
 
       setState(() {
-        _alertFuture = DatabaseHelper.instance.getActiveAlerts(); 
+        _alertFuture = _refreshData();
       });
+
+      // Wait for the future to finish so the RefreshIndicator spinner hides at the right time
+      await _alertFuture;
     }
 
     @override
