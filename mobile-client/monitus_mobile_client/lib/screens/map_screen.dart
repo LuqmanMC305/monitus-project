@@ -131,9 +131,9 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
       case 'high':
         return Colors.red;
       case 'medium':
-        return Colors.orange;
+        return Color(0xFFF9A825); // Amber
       case 'low':
-        return Colors.yellow;
+        return Color(0xFF90EE90); // Light Green
       default:
         return Colors.grey; // Fallback for unknown types
     }
