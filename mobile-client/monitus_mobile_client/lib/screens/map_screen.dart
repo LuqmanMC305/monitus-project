@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../services/database_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/registration_service.dart';
+import '../services/alert_notifier.dart';
 
 
 class AlertMapScreen extends StatefulWidget {
@@ -22,6 +23,9 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
     super.initState();
     // Fetch all alerts from SQLite
     _mapAlerts = DatabaseHelper.instance.getActiveAlerts(); 
+    
+    // Listen for background updates to clear resolved markers
+    AlertNotifier.refreshTrigger.addListener(_refreshMapData);
   }
 
   // Sync current mobile user location using determinePosition inside registration_service file

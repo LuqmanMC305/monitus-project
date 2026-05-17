@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart'; // For formatting the date
 import '../services/database_helper.dart';
 import '../services/translation_service.dart';
-import '../services/registration_service.dart';
+import '../services/alert_notifier.dart';
 
 class AlertHistoryScreen extends StatefulWidget {
   const AlertHistoryScreen({super.key});
@@ -29,6 +28,7 @@ class AlertHistoryScreen extends StatefulWidget {
       void initState() {
         super.initState();
         _alertFuture = _refreshData();  // Initialise by calling the combined cleanup and fetch logic
+        AlertNotifier.refreshTrigger.addListener(_loadAlerts);
       }
 
         // Helper function to handle expired alerts (NEW MASTER FUNCTION FOR ALERT REFRESH)
@@ -40,7 +40,13 @@ class AlertHistoryScreen extends StatefulWidget {
         return DatabaseHelper.instance.getActiveAlerts();
       }
 
-    // Manual Refresh Function
+      @override
+      void dispose() {
+        AlertNotifier.refreshTrigger.removeListener(_loadAlerts);
+        super.dispose();
+      }
+
+    // Manual Refresh _refreshData
     Future<void> _loadAlerts() async {
       print("RELOADING ALERTS");
 
@@ -66,7 +72,7 @@ class AlertHistoryScreen extends StatefulWidget {
           // Handle the case where no alerts are found
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return RefreshIndicator(
-              onRefresh: _refreshData,
+              onRefresh: _handlePullToRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(), // Ensures pull-to-refresh works when empty
                 children: const [
@@ -81,7 +87,7 @@ class AlertHistoryScreen extends StatefulWidget {
 
           // Handle the active alert list
           return RefreshIndicator(
-            onRefresh: _refreshData,
+            onRefresh: _handlePullToRefresh,
             color: Colors.blueAccent,
             child: ListView.separated(
               // AlwaysScrollableScrollPhysics ensures the gesture works even for short lists
@@ -150,6 +156,19 @@ class AlertHistoryScreen extends StatefulWidget {
         },
       );
     }
+
+    // Explicit UI trigger for the pull-to-refresh gesture
+    Future<void> _handlePullToRefresh() async {
+      print("USER PULLED DOWN TO REFRESH");
+
+      setState(() {
+        // Re-assigning the future tells the FutureBuilder to show the loader and update
+        _alertFuture = _refreshData();
+      });
+
+      // Keep the loading spinner active until the database operations finish
+      await _alertFuture;
+    }
   }
   
   // Helper function to pick the icon based on 'alert_type' (WILL CUSTOMISE ALERTS LATER)
@@ -170,6 +189,8 @@ class AlertHistoryScreen extends StatefulWidget {
       child: Icon(iconData, color: Colors.white),
     );
   }
+
+   
 
 
 

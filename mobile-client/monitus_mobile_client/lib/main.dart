@@ -5,6 +5,7 @@ import 'providers/registration_provider.dart';
 import 'providers/community_provider.dart';
 import 'screens/registration_screen.dart';
 import 'services/translation_service.dart';
+import 'services/alert_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -74,25 +75,38 @@ void main() async{
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint("FULL MESSAGE DATA: ${message.data}");
       debugPrint("--- SOMETHING ARRIVED ---");
-      
+
       // Check the "Silent" Resolve Signal first
-      if (message.data['type'] == 'RESOLVE_ALERT') {
-        // Get the unique ID from the message
-        String? alertId = message.data['alert_id']; 
+     if (message.data['type'] == 'RESOLVE_ALERT') {
+      String? rawTitle = message.data['alert_title'];
+      String? alertTitle = rawTitle?.trim(); 
+      
+      if (alertTitle != null && alertTitle.isNotEmpty) {
+        final db = await DatabaseHelper.instance.database;
         
-      if (message.data['type'] == 'RESOLVE_ALERT') {
-        // 1. Extract the title from the FCM data
-        String? alertTitle = message.data['alert_title']; 
-        
-        if (alertTitle != null) {
-            // 2. Use the Title-based method you already have in DatabaseHelper
-            await DatabaseHelper.instance.updateAlertStatusByTitle(alertTitle, 'resolved');
-        
-            debugPrint("Handshake: Title '$alertTitle' successfully marked as resolved in SQLite.");
+        List<Map<String, dynamic>> matchingAlerts = await db.query(
+          'alerts',
+          where: 'title LIKE ? AND (status != ? OR status IS NULL)',
+          whereArgs: [alertTitle, 'resolved'],
+        );
+
+        // ======== 🔍 EXPLICIT LIST DIAGNOSTICS ========
+        debugPrint("Checking SQLite results for title: '$alertTitle'");
+        debugPrint("Matching Alerts List Length: ${matchingAlerts.length}");
+        debugPrint("Raw Matching Alerts List Content: $matchingAlerts");
+        // =============================================
+
+        if (matchingAlerts.isNotEmpty) {
+          int localId = matchingAlerts.first['id']; 
+          await DatabaseHelper.instance.updateAlertStatusById(localId, 'resolved');
+          debugPrint("Handshake Success: Corrected Local ID '$localId' marked as resolved.");
+          AlertNotifier.notifyRefresh(); 
+        } else {
+          debugPrint("Handshake Warning: Bypassed code because matchingAlerts is EMPTY.");
         }
-        return; 
+      }
+      return; 
     }
-  }
       // Start of the standard alert logic (notification + insertation)
       debugPrint('Foreground message received: ${message.notification?.title}');
 

@@ -99,6 +99,7 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getActiveAlerts() async {
     final db = await instance.database;
 
+
     // We only want alerts where is_resolved is 0 (false)
     return await db.query(
       'alerts', 
@@ -108,17 +109,6 @@ class DatabaseHelper {
     );
   }
 
-  // Method to Update Alert Status
-  Future<int> updateAlertStatusByTitle(String title, String status) async {
-  final db = await instance.database;
-
-  return await db.update(
-    'alerts',
-    {'status': status}, // Set status to 'resolved'
-    where: 'title = ?',  // Find the row where the title matches
-    whereArgs: [title],
-  );
- }
 
   // Method to save new translation into SQLite
   Future<int> updateAlertTranslation(int id, String translatedBody, String langCode) async {
@@ -134,7 +124,7 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> updateAlertStatusById(int id, String status) async {
+  Future<int> updateAlertStatusById(id, String status) async {
     final db = await instance.database;
     return await db.update(
         'alerts',
