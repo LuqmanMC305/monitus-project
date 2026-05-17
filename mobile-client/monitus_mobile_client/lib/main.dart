@@ -76,7 +76,50 @@ void main() async{
       debugPrint("FULL MESSAGE DATA: ${message.data}");
       debugPrint("--- SOMETHING ARRIVED ---");
 
-      // Check the "Silent" Resolve Signal first
+      // New Alerts
+      if (message.data['status'] == 'NEW_ALERT') {
+        debugPrint("Incoming Live Notification Payload: ${message.data}");
+
+          if (message.notification != null) {
+            _showForegroundNotification(message);
+
+            String originalBody = message.notification?.body ?? 'No Body';
+            String targetLang = PlatformDispatcher.instance.locale.languageCode; // Get phone language
+            String translatedText = originalBody; // Default to original
+
+            // Trigger Translation only if not English
+            if(targetLang != 'en'){
+              debugPrint("Translating to $targetLang...");
+              translatedText = await TranslationService().translateAlert(originalBody);
+            }
+
+            await DatabaseHelper.instance.insertAlert({
+                'title': message.notification?.title ?? 'No Title',
+                'body': message.notification?.body ?? 'No Body',
+                'translated_body': translatedText, 
+                'language_code': targetLang,
+                'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
+
+                // --- New Geospatial Handshake ---
+                'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
+                'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
+                'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00, //Default radius size of 500m
+                // --------------------------------
+
+                'received_at': DateTime.now().toIso8601String(),
+                'status': 'active',
+            });
+            debugPrint('Alert (Translated) stored to Local database.');
+
+            // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
+            await DatabaseHelper.instance.testDatabase();
+
+            // CRITICAL: Wake up both your Map and History views without manual pull downs!
+            AlertNotifier.notifyRefresh();
+          }
+      }
+
+      // Resolve Alert
      if (message.data['type'] == 'RESOLVE_ALERT') {
       String? rawTitle = message.data['alert_title'];
       String? alertTitle = rawTitle?.trim(); 
@@ -106,49 +149,11 @@ void main() async{
         }
       }
       return; 
-    }
-      // Start of the standard alert logic (notification + insertation)
-      debugPrint('Foreground message received: ${message.notification?.title}');
-
-      if (message.notification != null) {
-        _showForegroundNotification(message);
-
-        String originalBody = message.notification?.body ?? 'No Body';
-        String targetLang = PlatformDispatcher.instance.locale.languageCode; // Get phone language
-        String translatedText = originalBody; // Default to original
-
-        // Trigger Translation only if not English
-        if(targetLang != 'en'){
-          debugPrint("Translating to $targetLang...");
-          translatedText = await TranslationService().translateAlert(originalBody);
-        }
-
-       await DatabaseHelper.instance.insertAlert({
-          'title': message.notification?.title ?? 'No Title',
-          'body': message.notification?.body ?? 'No Body',
-          'translated_body': translatedText, 
-          'language_code': targetLang,
-          'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
-
-          // --- New Geospatial Handshake ---
-          'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
-          'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
-          'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00, //Default radius size of 500m
-          // --------------------------------
-
-          'received_at': DateTime.now().toIso8601String(),
-          'status': 'active',
-      });
-        debugPrint('Alert (Translated) stored to Local database.');
-
-        // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
-        await DatabaseHelper.instance.testDatabase();
-      }
+     }
     });         
   } catch (e){
     debugPrint("Firebase initialisation failed! $e");
   }
-
 
   Workmanager().initialize(callbackDispatcher);
 

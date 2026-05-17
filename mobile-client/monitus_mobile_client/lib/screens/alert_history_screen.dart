@@ -173,19 +173,33 @@ class AlertHistoryScreen extends StatefulWidget {
   
   // Helper function to pick the icon based on 'alert_type' (WILL CUSTOMISE ALERTS LATER)
   Widget _getAlertIcon(String? type) {
-    IconData iconData;
+    IconData iconData = Icons.notifications;
+    Color bgColour;
+
     switch (type) {
-      case 'flood_warning':
-        iconData = Icons.water_drop; // Currently using Material Icons
+      /*
+      case 'flood_warning': // WILL CONSIDER THIS SOON FOR ALERT ICON TYPES
+        iconData = Icons.water_drop; 
         break;
-      case 'emergency':
+      case 'emergency': // WILL CONSIDER THIS SOON FOR ALERT ICON TYPES
         iconData = Icons.warning;
         break;
+      */
+      case 'HIGH':
+        bgColour = Color(0xFFF44336); // Red
+        break;
+      case 'MEDIUM':
+        bgColour = Color(0xFFF9A825); // Amber
+        break;
+      case 'LOW':
+        bgColour = Color(0xFF2E7D32); // Green
+        break;  
       default:
-        iconData = Icons.notifications;
+        bgColour = Colors.black;
+        break;  
     }
     return CircleAvatar(
-      backgroundColor: Colors.black,
+      backgroundColor: bgColour,
       child: Icon(iconData, color: Colors.white),
     );
   }
