@@ -12,6 +12,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:monitus_mobile_client/services/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 import 'dart:ui';
 
 // Background Service for Location Update Cycle using Workmanager
@@ -50,6 +51,8 @@ Future<void> _showForegroundNotification(RemoteMessage message) async {
 void main() async{
   // Ensure the initialisation of Flutter bindings
   WidgetsFlutterBinding.ensureInitialized();
+
+  ApiConfig.current = Environment.local;
 
   // Initialise Firebase
   try{

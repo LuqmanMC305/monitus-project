@@ -1,12 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/api_config.dart';
 
 
 
 class CommunityService{
+
+    /*
     // Replace with  actual local/production IP
     final String baseUrl = 'https://monitus-laravel-backend-49hltibe.on-forge.com/api';
+    */
 
     // Fetch available communities (for the Discovery Screen)
     Future<List<dynamic>> fetchCommunities() async {
@@ -19,7 +23,7 @@ class CommunityService{
       print('--- SENDING TOKEN: $token ---');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/communities'), 
+        ApiConfig.loadCommunity(), 
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/json',
@@ -36,7 +40,7 @@ class CommunityService{
       }
     }
 
-    // The Join Request logic
+  // The Join Request logic
   Future<Map<String, dynamic>> joinCommunity(int communityId) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -44,7 +48,7 @@ class CommunityService{
     final token = prefs.getString('auth-token');
 
     final response = await http.post(
-      Uri.parse('$baseUrl/communities/join'),
+      ApiConfig.joinCommunity(),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

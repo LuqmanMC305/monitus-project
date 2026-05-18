@@ -5,10 +5,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../config/api_config.dart';
 import 'dart:io' show Platform;
 
 
 class RegistrationService {
+
+  /*
   // Endpoint 1: For registering User Account (app_users table)
   final _registerApiUrl = Uri.parse('https://monitus-laravel-backend-49hltibe.on-forge.com/api/app-register');
 
@@ -17,11 +20,12 @@ class RegistrationService {
 
   // Endpoint 3: For syncing Device data (mobile_users table)
   final _apiUrl = Uri.parse('https://monitus-laravel-backend-49hltibe.on-forge.com/api/register-mobile');
+  */
 
   Future<bool> createAccount(String name, String email, String password) async{
     try{
       final response = await http.post(
-        _registerApiUrl,
+        ApiConfig.register(),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -108,7 +112,7 @@ class RegistrationService {
 
       // 4. Send the Single POST request to Laravel 
       final response = await http.post(
-        _apiUrl,
+        ApiConfig.registerMobile(),
         headers: {
           'Content-Type': 'application/json', 
           'Accept': 'application/json',
@@ -137,7 +141,7 @@ class RegistrationService {
     try {
       // Replace with your actual Laravel login endpoint URL
       final response = await http.post(
-        _loginApiUrl,
+        ApiConfig.login(),
         headers: {
           'Accept': 'application/json',
           'ngrok-skip-browser-warning': 'true',
