@@ -58,14 +58,13 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
         status = mobileUsers[0]['pivot']?['status'] ?? 'none';
     }
     
-
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(community['community_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(community['community_description'] ?? 'Stay updated with local alerts.'),
-        trailing: _buildStatusButton(context, provider, community['community_id'], status),
+        trailing: _buildStatusButton(context, provider, community, status),
       ),
     );
   }
