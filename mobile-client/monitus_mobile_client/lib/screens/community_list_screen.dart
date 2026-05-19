@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/community_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CommunityListScreen extends StatefulWidget {
   const CommunityListScreen({super.key});
@@ -69,19 +70,32 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
     );
   }
 
-  Widget _buildStatusButton(BuildContext context, CommunityProvider provider, int id, String status) {
+  Widget _buildStatusButton(BuildContext context, CommunityProvider provider, Map<String, dynamic> community, String status) {
+
+    // Extract community data from JSON passed by Laravel
+    final int id = community['community_id'];
+    final String? telegramLink = community['telegram_link'];
+
     if (status == 'approved') {
-      return const Chip(
-        label: Text('Member'), 
-        backgroundColor: Colors.greenAccent);
+      return ElevatedButton.icon(
+        onPressed: () => _launchTelegram(telegramLink),
+        icon: const Icon(Icons.telegram, color: Colors.white),
+        label: const Text('Join Channel'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue, 
+        ),
+      );
     } else if (status == 'pending') {
       return const Chip(
-        label: Text('Member'), 
+        label: Text('Pending'), 
         backgroundColor: Colors.amber);
     } else {
       return ElevatedButton(
         onPressed: () async {
           final result = await provider.requestToJoin(id);
+
+          provider.loadCommunities();
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result['message'])),
           );
@@ -90,4 +104,18 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       );
     }
   }
+
+    // Helper function to launch telegram
+    Future<void> _launchTelegram(String? urlString) async {
+      if (urlString == null || urlString.isEmpty) return;
+
+      final Uri url = Uri.parse(urlString);
+      // Uses url_launcher package to securely bounce execution to the native Telegram app
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        debugPrint("Could not redirect path structure to: $urlString");
+      }
+  }
+  
 }
