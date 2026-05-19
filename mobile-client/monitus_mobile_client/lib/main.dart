@@ -19,6 +19,9 @@ import 'dart:ui';
 import 'package:workmanager/workmanager.dart';
 import 'services/background_service.dart'; 
 
+// Declare Navigator Key for firebase listening admin community approval
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 // Background mesage handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -79,47 +82,57 @@ void main() async{
       debugPrint("FULL MESSAGE DATA: ${message.data}");
       debugPrint("--- SOMETHING ARRIVED ---");
 
+      // Community Status Update
+      if(message.data['type'] == 'COMMUNITY_STATUS_UPDATE'){
+         debugPrint("Admin Approval detected for community request. ");
+
+         if (navigatorKey.currentContext != null) {
+          // Wakes up your existing state machine to silently fetch the fresh community snapshot
+          Provider.of<CommunityProvider>(navigatorKey.currentContext!, listen: false).loadCommunities();
+    }
+      }
+
       // New Alerts
       if (message.data['status'] == 'NEW_ALERT') {
         debugPrint("Incoming Live Notification Payload: ${message.data}");
 
-          if (message.notification != null) {
-            _showForegroundNotification(message);
+        if (message.notification != null) {
+          _showForegroundNotification(message);
 
-            String originalBody = message.notification?.body ?? 'No Body';
-            String targetLang = PlatformDispatcher.instance.locale.languageCode; // Get phone language
-            String translatedText = originalBody; // Default to original
+          String originalBody = message.notification?.body ?? 'No Body';
+          String targetLang = PlatformDispatcher.instance.locale.languageCode; // Get phone language
+          String translatedText = originalBody; // Default to original
 
-            // Trigger Translation only if not English
-            if(targetLang != 'en'){
-              debugPrint("Translating to $targetLang...");
-              translatedText = await TranslationService().translateAlert(originalBody);
-            }
-
-            await DatabaseHelper.instance.insertAlert({
-                'title': message.notification?.title ?? 'No Title',
-                'body': message.notification?.body ?? 'No Body',
-                'translated_body': translatedText, 
-                'language_code': targetLang,
-                'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
-
-                // --- New Geospatial Handshake ---
-                'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
-                'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
-                'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00, //Default radius size of 500m
-                // --------------------------------
-
-                'received_at': DateTime.now().toIso8601String(),
-                'status': 'active',
-            });
-            debugPrint('Alert (Translated) stored to Local database.');
-
-            // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
-            await DatabaseHelper.instance.testDatabase();
-
-            // CRITICAL: Wake up both your Map and History views without manual pull downs!
-            AlertNotifier.notifyRefresh();
+          // Trigger Translation only if not English
+          if(targetLang != 'en'){
+            debugPrint("Translating to $targetLang...");
+            translatedText = await TranslationService().translateAlert(originalBody);
           }
+
+          await DatabaseHelper.instance.insertAlert({
+              'title': message.notification?.title ?? 'No Title',
+              'body': message.notification?.body ?? 'No Body',
+              'translated_body': translatedText, 
+              'language_code': targetLang,
+              'alert_type': message.data['alert_type'] ?? 'general', // Extracting the extra data that sent from Laravel
+
+              // --- New Geospatial Handshake ---
+              'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
+              'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
+              'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00, //Default radius size of 500m
+              // --------------------------------
+
+              'received_at': DateTime.now().toIso8601String(),
+              'status': 'active',
+          });
+          debugPrint('Alert (Translated) stored to Local database.');
+
+          // ADD TEST CALL FOR MOBILE DATA PERSISTANCE TESTING (WILL REMOVE IT LATER)
+          await DatabaseHelper.instance.testDatabase();
+
+          // CRITICAL: Wake up both your Map and History views without manual pull downs!
+          AlertNotifier.notifyRefresh();
+        }
       }
 
       // Resolve Alert
@@ -235,6 +248,7 @@ class MonitusApp extends StatelessWidget {
     return MaterialApp(
       title: 'Monitus',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       // LOGIC: If ID exists, go to MainWrapper; else, Register
       home: isLoggedIn ? const MainWrapper() : const RegistrationScreen(),
     );
