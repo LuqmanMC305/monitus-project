@@ -56,6 +56,7 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
         // SUCCESS: Reach into the first user object to find the pivot data
         // Laravel nests it as: mobile_users -> [0] -> pivot -> status
         status = mobileUsers[0]['pivot']?['status'] ?? 'none';
+
     }
     
     return Card(
@@ -79,7 +80,10 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       return ElevatedButton.icon(
         onPressed: () => _launchTelegram(telegramLink),
         icon: const Icon(Icons.telegram, color: Colors.white),
-        label: const Text('Join Channel'),
+        label: const Text(
+          'Join Channel',
+           style: TextStyle(color: Colors.black)
+          ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue, 
         ),
@@ -87,7 +91,14 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
     } else if (status == 'pending') {
       return const Chip(
         label: Text('Pending'), 
-        backgroundColor: Colors.amber);
+        backgroundColor: Colors.amber,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(20)
+          ),
+          side: BorderSide.none,
+        )
+      );
     } else {
       return ElevatedButton(
         onPressed: () async {
@@ -109,6 +120,7 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       if (urlString == null || urlString.isEmpty) return;
 
       final Uri url = Uri.parse(urlString);
+
       // Uses url_launcher package to securely bounce execution to the native Telegram app
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
