@@ -232,7 +232,13 @@ void main() async{
         ChangeNotifierProvider(create: (_) => RegistrationProvider()),
         
         // Ensures that the "Pending" or "Approved" states are consistent across the app
-        ChangeNotifierProvider(create: (_) => CommunityProvider()), 
+        ChangeNotifierProvider(create: (_) {
+        final provider = CommunityProvider();
+        if (savedUserId != null && savedUserId != "0") {
+          provider.setCurrentUser(int.parse(savedUserId));
+        }
+        return provider;
+      }),
       ],
       child: MonitusApp(isLoggedIn: sessionValid),
     ),

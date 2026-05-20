@@ -3,13 +3,19 @@ import '../services/community_service.dart';
 
 class CommunityProvider with ChangeNotifier {
   final CommunityService _service = CommunityService();
-  int? currentMobileUserId = 7; //HARDCODED FOR NOW
+  int? currentMobileUserId; 
   
   List<dynamic> _communities = [];
   bool _isLoading = false;
 
   List<dynamic> get communities => _communities;
   bool get isLoading => _isLoading;
+
+
+  void setCurrentUser(int userId) {
+    currentMobileUserId = userId;
+    notifyListeners(); // This triggers UI components like your button chips to refresh automatically!
+  }
 
   // Fetch the list of available communities for the UI
   Future<void> loadCommunities() async {

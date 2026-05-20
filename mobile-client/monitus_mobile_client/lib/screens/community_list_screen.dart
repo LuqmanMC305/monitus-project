@@ -34,14 +34,19 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
           if (provider.communities.isEmpty) {
             return const Center(child: Text('No communities found nearby.'));
           }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: provider.communities.length,
-            itemBuilder: (context, index) {
-              final community = provider.communities[index];
-              return _buildCommunityCard(context, provider, community);
-            },
+          
+          return RefreshIndicator(
+            onRefresh: () async{
+              await provider.loadCommunities();
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: provider.communities.length,
+                itemBuilder: (context, index) {
+                  final community = provider.communities[index];
+                  return _buildCommunityCard(context, provider, community);
+              },
+            ),
           );
         },
       ),
@@ -53,19 +58,31 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
     final List mobileUsers = community['mobile_users'] ?? [];
     String status = 'none';
 
-    
-
     if (mobileUsers.isNotEmpty) {
       // DYNAMIC FIX: Ask the provider for the true logged-in user ID
       final int? currentUserId = provider.currentMobileUserId;
 
+      // Check what the provider thinks  active user ID is
+      debugPrint("Active User ID in Provider: $currentUserId");
+
       final myRecord = mobileUsers.firstWhere(
-        (user) => user['mobile_user_id'] == currentUserId,
+        (user) {
+
+          //DEFENSIVE CHECK: Read the ID from the top level OR the nested pivot layer
+          final int? topLevelId = user['mobile_user_id'];
+          final int? pivotLevelId = user['pivot']?['mobile_user_id'];
+
+          return topLevelId == currentUserId || pivotLevelId == currentUserId;
+        },
         orElse: () => null,
       );
 
       if (myRecord != null) {
+
+        debugPrint("SUCCESS: Your record was found! Raw User Data: $myRecord");
         status = myRecord['pivot']?['status'] ?? 'none';
+
+        debugPrint("Extracted Status Value: $status");
       }
       
   }

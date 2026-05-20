@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../config/api_config.dart';
-import '../providers/community_provider.dart';
 import 'dart:io' show Platform;
 
 
@@ -155,7 +154,9 @@ class RegistrationService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final String userId = data['app_user_id'].toString();
+
+        // Extract mobile_user_id
+        final String userId = data['mobile_user_id'].toString();
         final String userName = data['name'] ?? 'User';
         
         // Save Mobile User Token for Auth
@@ -168,7 +169,7 @@ class RegistrationService {
         // Save the token so CommunityService can find it
         await prefs.setString('auth-token', token);
 
-        await prefs.setString('saved_user_id', userId);
+        await prefs.setString('saved_user_id', userId); // Saved 7 instead of 36
         await prefs.setString('user_name', userName);
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
         

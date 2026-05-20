@@ -4,6 +4,8 @@ import 'package:monitus_mobile_client/screens/main_wrapper_screen.dart';
 //import 'package:monitus_mobile_client/screens/map_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
+import '../providers/community_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -128,12 +130,24 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
           Text( _isLoginMode ? "Login Successful" : "Registered Successfully", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              // Navigate to the Dashboard
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MainWrapper()),
-              );
+            onPressed: () async {
+
+              //Fetch the newly saved dynamic ID straight out of SharedPreferences
+              final prefs = await SharedPreferences.getInstance();
+              final String? newId = prefs.getString('saved_user_id');
+
+              //  Inject the true active ID straight into CommunityProvider
+              if (newId != null && context.mounted) {
+                Provider.of<CommunityProvider>(context, listen: false).setCurrentUser(int.parse(newId));
+              }
+
+              if (context.mounted){
+                // Navigate to the Dashboard
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MainWrapper()),
+                );
+              }
             },
             child: const Text("Enter Dashboard", style: TextStyle(fontSize: 16)),
           ),
