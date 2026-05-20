@@ -3,6 +3,7 @@ import '../services/community_service.dart';
 
 class CommunityProvider with ChangeNotifier {
   final CommunityService _service = CommunityService();
+  int? currentMobileUserId = 7; //HARDCODED FOR NOW
   
   List<dynamic> _communities = [];
   bool _isLoading = false;

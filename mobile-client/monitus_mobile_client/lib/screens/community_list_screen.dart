@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/community_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
 class CommunityListScreen extends StatefulWidget {
   const CommunityListScreen({super.key});
 
@@ -50,14 +51,24 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
   Widget _buildCommunityCard(BuildContext context, CommunityProvider provider, dynamic community) {
     // 1. Access the list of users associated with this community
     final List mobileUsers = community['mobile_users'] ?? [];
-
     String status = 'none';
-    if(mobileUsers.isNotEmpty){
-        // SUCCESS: Reach into the first user object to find the pivot data
-        // Laravel nests it as: mobile_users -> [0] -> pivot -> status
-        status = mobileUsers[0]['pivot']?['status'] ?? 'none';
 
-    }
+    
+
+    if (mobileUsers.isNotEmpty) {
+      // DYNAMIC FIX: Ask the provider for the true logged-in user ID
+      final int? currentUserId = provider.currentMobileUserId;
+
+      final myRecord = mobileUsers.firstWhere(
+        (user) => user['mobile_user_id'] == currentUserId,
+        orElse: () => null,
+      );
+
+      if (myRecord != null) {
+        status = myRecord['pivot']?['status'] ?? 'none';
+      }
+      
+  }
     
     return Card(
       elevation: 3,

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../config/api_config.dart';
+import '../providers/community_provider.dart';
 import 'dart:io' show Platform;
 
 
@@ -171,7 +172,6 @@ class RegistrationService {
         await prefs.setString('user_name', userName);
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
         
-
         debugPrint("Login Successful: User $userId");
         return true;
       } else {
