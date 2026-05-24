@@ -28,6 +28,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Ensure Firebase is ready for the background process
   await Firebase.initializeApp();
   debugPrint("Handling a background message: ${message.messageId}");
+
+  // 🟢 CHANGED: Use the uniform string key name inside background isolates
+  final prefs = await SharedPreferences.getInstance();
+  final String? appUserId = prefs.getString('saved_app_user_id');
+  
+  if (appUserId == null || appUserId.isEmpty || appUserId == 'null') {
+    debugPrint("I/flutter (Background Isolate): Checking Mobile User Identity: No User Found");
+    return;
+  }
+  
+  debugPrint("Handling a background message: ${message.messageId} for User ID: $appUserId");
 }
 
 // Define Foreground Notification
@@ -89,7 +100,7 @@ void main() async{
          if (navigatorKey.currentContext != null) {
           // Wakes up your existing state machine to silently fetch the fresh community snapshot
           Provider.of<CommunityProvider>(navigatorKey.currentContext!, listen: false).loadCommunities();
-    }
+        }
       }
 
       // New Alerts
@@ -203,14 +214,15 @@ void main() async{
 
   // Check for saved mobile user identity
   final prefs = await SharedPreferences.getInstance();
-  final String? savedUserId = prefs.getString('saved_user_id');
+  final String? savedAppUserId = prefs.getString('saved_app_user_id');
   final int? lastActivity = prefs.getInt('last_activity');
 
   bool sessionValid = false;
 
-  debugPrint("Checking Mobile User Identity: ${savedUserId ?? 'No User Found'}");
+  debugPrint("Checking Mobile User Identity: ${savedAppUserId ?? 'No User Found'}");
 
-  if (savedUserId != null && savedUserId != "0" && lastActivity != null) {
+  if (savedAppUserId != null && savedAppUserId.isNotEmpty && savedAppUserId 
+      != "null" && savedAppUserId != "0" && lastActivity != null) {
     // Timeout definition (e.g., 30 days in milliseconds)
     const int thirtyDays = 30 * 24 * 60 * 60 * 1000;
     int currentTime = DateTime.now().millisecondsSinceEpoch;
@@ -221,10 +233,11 @@ void main() async{
       await prefs.setInt('last_activity', currentTime);
     } else {
       // Session expired: Clear the data
-      await prefs.remove('saved_user_id');
+      await prefs.remove('saved_app_user_id');
+      await prefs.remove('saved_mobile_user_id');
       await prefs.remove('last_activity');
     }
-  } else if (savedUserId == "0") await prefs.remove('saved_user_id'); // wipe "0"
+  } else if (savedAppUserId == "0") await prefs.remove('saved_app_user_id'); 
 
   runApp(
     MultiProvider(
@@ -233,12 +246,15 @@ void main() async{
         
         // Ensures that the "Pending" or "Approved" states are consistent across the app
         ChangeNotifierProvider(create: (_) {
-        final provider = CommunityProvider();
-        if (savedUserId != null && savedUserId != "0") {
-          provider.setCurrentUser(int.parse(savedUserId));
-        }
-        return provider;
-      }),
+          final provider = CommunityProvider();
+          if (savedAppUserId != null && savedAppUserId.isNotEmpty && 
+              savedAppUserId != "0" && savedAppUserId != "null") {
+                final int? cleanId = int.tryParse(savedAppUserId);
+
+                if(cleanId != null) provider.setCurrentUser(cleanId);
+          }
+          return provider;
+        }),
       ],
       child: MonitusApp(isLoggedIn: sessionValid),
     ),

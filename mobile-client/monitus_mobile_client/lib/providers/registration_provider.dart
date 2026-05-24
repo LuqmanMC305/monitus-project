@@ -57,6 +57,7 @@ class RegistrationProvider extends ChangeNotifier {
 
   Future<void> handleLogin({required String email, required String password}) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
