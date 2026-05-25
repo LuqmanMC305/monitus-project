@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
 import '../providers/community_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/storage_keys.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -135,7 +136,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
               //Fetch the newly saved dynamic ID straight out of SharedPreferences
               final prefs = await SharedPreferences.getInstance();
               final String? newId = prefs.getString('saved_user_id');
-              final String? mobileUserId = prefs.getString('saved_mobile_user_id');
+              final String? mobileUserId = prefs.getString(StorageKeys.mobileUserId);
                   
               //  Inject the true active ID straight into CommunityProvider
               if (newId != null && mobileUserId != null && context.mounted) {

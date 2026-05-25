@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../config/api_config.dart';
+import '../config/storage_keys.dart';
 import 'dart:io' show Platform;
 
 class RegistrationService {
@@ -33,8 +34,8 @@ class RegistrationService {
 
         //  Explicitly preserve this as the unique account credential reference
         final String appUserId = data['app_user_id']?.toString() ?? '';
-        await prefs.setString('saved_app_user_id', appUserId);
-        await prefs.setString('user_name', data['name'] ?? name);
+        await prefs.setString(StorageKeys.appUserId, appUserId);
+        await prefs.setString(StorageKeys.userName, data['name'] ?? name);
 
         //  Swapped from microseconds to uniform millisecond epochs
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);
@@ -67,7 +68,7 @@ class RegistrationService {
       final prefs = await SharedPreferences.getInstance();
       
       // 🟢 FIX 3: Correctly extract the authentic App User database primary key
-      String realAppUserID = prefs.getString('saved_app_user_id') ?? '0';
+      String realAppUserID = prefs.getString(StorageKeys.appUserId) ?? '0';
 
       // Initialise placeholder device ID
       String uniqueDeviceId = "unknown_device";
@@ -120,10 +121,10 @@ class RegistrationService {
         
         //  Safely record the newly initialized hardware pivot index identifier
         if (responseData['data'] != null && responseData['data']['id'] != null) {
-          await prefs.setString('saved_mobile_user_id', responseData['data']['id'].toString());
+          await prefs.setString(StorageKeys.mobileUserId, responseData['data']['id'].toString());
         }
 
-        String currentUserName = prefs.getString('user_name') ?? 'User';
+        String currentUserName = prefs.getString(StorageKeys.userName) ?? 'User';
         debugPrint("Dashboard Check: Current user is '$currentUserName'");
         debugPrint("Identity Saved: User $realAppUserID is ready for Dashboard.");
       } else {
@@ -163,10 +164,10 @@ class RegistrationService {
         debugPrint("Token is: $token");
 
         // Save session tokens cleanly
-        await prefs.setString('auth-token', token);
-        await prefs.setString('saved_app_user_id', appUserId);
-        await prefs.setString('saved_mobile_user_id', mobileUserId);
-        await prefs.setString('user_name', userName);
+        await prefs.setString(StorageKeys.authToken, token);
+        await prefs.setString(StorageKeys.appUserId, appUserId);
+        await prefs.setString(StorageKeys.mobileUserId, mobileUserId);
+        await prefs.setString(StorageKeys.userName, userName);
         
         // Match registration timing mechanics precisely 
         await prefs.setInt('last_activity', DateTime.now().millisecondsSinceEpoch);

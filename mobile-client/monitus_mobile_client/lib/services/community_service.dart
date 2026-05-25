@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
+import '../config/storage_keys.dart';
 
 class CommunityService {
   
@@ -10,7 +11,7 @@ class CommunityService {
     final prefs = await SharedPreferences.getInstance();
 
     // 🟢 CHANGED: Using uniform token storage keys matching active login states
-    final token = prefs.getString('auth-token');
+    final token = prefs.getString(StorageKeys.authToken);
 
     // DEBUG: Check your terminal. If this says 'null', your login failed to save it.
     print('--- TOKEN IN COMMUNITY SCREEN: $token ---');
@@ -37,7 +38,7 @@ class CommunityService {
     final prefs = await SharedPreferences.getInstance();
 
     // Unified bearer key check
-    final token = prefs.getString('auth-token');
+    final token = prefs.getString(StorageKeys.authToken);
 
     final response = await http.post(
       ApiConfig.joinCommunity(),

@@ -13,6 +13,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:monitus_mobile_client/services/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
+import '../config/storage_keys.dart';
 import 'dart:ui';
 
 // Background Service for Location Update Cycle using Workmanager
@@ -31,7 +32,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   // 🟢 CHANGED: Use the uniform string key name inside background isolates
   final prefs = await SharedPreferences.getInstance();
-  final String? appUserId = prefs.getString('saved_app_user_id');
+  final String? appUserId = prefs.getString(StorageKeys.appUserId);
   
   if (appUserId == null || appUserId.isEmpty || appUserId == 'null') {
     debugPrint("I/flutter (Background Isolate): Checking Mobile User Identity: No User Found");
@@ -214,8 +215,8 @@ void main() async{
 
   // Check for saved mobile user identity
   final prefs = await SharedPreferences.getInstance();
-  final String? savedAppUserId = prefs.getString('saved_app_user_id');
-  final String? savedMobileUserId = prefs.getString('saved_mobile_user_id');
+  final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
+  final String? savedMobileUserId = prefs.getString(StorageKeys.mobileUserId);
   final int? lastActivity = prefs.getInt('last_activity');
 
   bool sessionValid = false;
@@ -234,11 +235,11 @@ void main() async{
       await prefs.setInt('last_activity', currentTime);
     } else {
       // Session expired: Clear the data
-      await prefs.remove('saved_app_user_id');
-      await prefs.remove('saved_mobile_user_id');
+      await prefs.remove(StorageKeys.appUserId);
+      await prefs.remove(StorageKeys.mobileUserId);
       await prefs.remove('last_activity');
     }
-  } else if (savedAppUserId == "0") await prefs.remove('saved_app_user_id'); 
+  } else if (savedAppUserId == "0") await prefs.remove(StorageKeys.appUserId); 
 
   runApp(
     MultiProvider(

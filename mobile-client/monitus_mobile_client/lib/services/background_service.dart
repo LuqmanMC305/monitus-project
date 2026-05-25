@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:monitus_mobile_client/config/storage_keys.dart';
 import 'package:workmanager/workmanager.dart';
 import 'registration_service.dart';
 import 'package:flutter/foundation.dart';
@@ -17,7 +18,7 @@ void callbackDispatcher() {
         final prefs = await SharedPreferences.getInstance();
         await prefs.reload(); // Ensures background isolate sees the newest login
         
-        final String? savedUserId = prefs.getString('saved_app_user_id');
+        final String? savedUserId = prefs.getString(StorageKeys.appUserId);
 
         debugPrint("BACKGROUND TASK STARTED");
         debugPrint("BACKGROUND USER ID: $savedUserId");

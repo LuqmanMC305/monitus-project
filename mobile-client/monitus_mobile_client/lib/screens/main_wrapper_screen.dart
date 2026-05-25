@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'registration_screen.dart'; 
 import 'package:provider/provider.dart';
 import '../providers/registration_provider.dart';
+import '../config/storage_keys.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -56,7 +57,7 @@ class _MainWrapperState extends State<MainWrapper> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       // Fetch the name we saved earlier
-      _userName = prefs.getString('user_name') ?? "User";
+      _userName = prefs.getString(StorageKeys.userName) ?? "User";
     });
   }
 

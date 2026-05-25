@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/community_service.dart';
+import '../config/storage_keys.dart';
 
 class CommunityProvider with ChangeNotifier {
   final CommunityService _service = CommunityService();
@@ -37,8 +38,8 @@ class CommunityProvider with ChangeNotifier {
     debugPrint("🔄 Provider context is null. Executing fallback SharedPreferences lookup...");
     final prefs = await SharedPreferences.getInstance();
     
-    final String? savedAppIdStr = prefs.getString('saved_app_user_id');
-    final String? savedMobileIdStr = prefs.getString('saved_mobile_user_id');
+    final String? savedAppIdStr = prefs.getString(StorageKeys.appUserId);
+    final String? savedMobileIdStr = prefs.getString(StorageKeys.mobileUserId);
 
     if (savedAppIdStr != null && savedAppIdStr.isNotEmpty && savedAppIdStr != 'null') {
       _currentAppUserId = int.tryParse(savedAppIdStr);
