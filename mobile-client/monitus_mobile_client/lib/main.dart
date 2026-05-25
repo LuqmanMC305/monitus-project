@@ -215,6 +215,7 @@ void main() async{
   // Check for saved mobile user identity
   final prefs = await SharedPreferences.getInstance();
   final String? savedAppUserId = prefs.getString('saved_app_user_id');
+  final String? savedMobileUserId = prefs.getString('saved_mobile_user_id');
   final int? lastActivity = prefs.getInt('last_activity');
 
   bool sessionValid = false;
@@ -247,11 +248,24 @@ void main() async{
         // Ensures that the "Pending" or "Approved" states are consistent across the app
         ChangeNotifierProvider(create: (_) {
           final provider = CommunityProvider();
-          if (savedAppUserId != null && savedAppUserId.isNotEmpty && 
-              savedAppUserId != "0" && savedAppUserId != "null") {
-                final int? cleanId = int.tryParse(savedAppUserId);
+          if (savedAppUserId != null && 
+              savedAppUserId.isNotEmpty && 
+              savedAppUserId != "0" && 
+              savedAppUserId != "null" &&
+              savedMobileUserId != null && 
+              savedMobileUserId.isNotEmpty && 
+              savedMobileUserId != "0" && 
+              savedMobileUserId != "null") {
 
-                if(cleanId != null) provider.setCurrentUser(cleanId);
+                final int? cleanAppUserId = int.tryParse(savedAppUserId);
+                final int? cleanMobileUserId = int.tryParse(savedMobileUserId);
+
+                if(cleanAppUserId != null && cleanMobileUserId != null){
+                    provider.setCurrentUser(
+                      cleanAppUserId,
+                      cleanMobileUserId,
+                    );
+                }
           }
           return provider;
         }),

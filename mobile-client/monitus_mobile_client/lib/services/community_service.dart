@@ -32,12 +32,12 @@ class CommunityService {
     }
   }
 
-  // 🟢 CHANGED: The Join Request logic now accepts the authenticated user's ID context
+  //  The Join Request logic now accepts the authenticated user's ID context
   Future<Map<String, dynamic>> joinCommunity({required int communityId, required int appUserId}) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // 🟢 CHANGED: Unified bearer key check
-    final token = prefs.getString('saved_access_token');
+    // Unified bearer key check
+    final token = prefs.getString('auth-token');
 
     final response = await http.post(
       ApiConfig.joinCommunity(),
@@ -47,7 +47,7 @@ class CommunityService {
         'Accept': 'application/json',
         'ngrok-skip-browser-warning': 'true',
       },
-      // 🟢 CHANGED: Passing 'user_id' so Laravel can parse the parameter securely
+      //  Passing 'user_id' so Laravel can parse the parameter securely
       body: jsonEncode({
         'community_id': communityId,
         'user_id': appUserId, 
@@ -56,6 +56,9 @@ class CommunityService {
 
     // Parse the JSON body from Laravel for status 
     final data = jsonDecode(response.body);
+    
+    print("JOIN STATUS: ${response.statusCode}");
+    print("JOIN BODY: ${response.body}");
     return {
       'success': response.statusCode >= 200 && response.statusCode < 300,
       'message': data['message'] ?? 'An error occurred',

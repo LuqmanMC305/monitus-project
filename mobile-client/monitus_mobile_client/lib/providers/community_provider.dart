@@ -4,6 +4,7 @@ import '../services/community_service.dart';
 
 class CommunityProvider with ChangeNotifier {
   final CommunityService _service = CommunityService();
+
   
   // 🟢 CHANGED: Tracking explicit ID archetypes cleanly to align with the database layers
   int? _currentAppUserId;
@@ -18,9 +19,11 @@ class CommunityProvider with ChangeNotifier {
   int? get currentMobileUserId => _currentMobileUserId;
 
   /// Synchronizes user profile markers across frontend state memory
-  void setCurrentUser(int appUserId) {
+  void setCurrentUser(int appUserId, int mobileUserId) {
     _currentAppUserId = appUserId;
-    debugPrint("🎯 Provider Memory Initialized: Active App User ID set to $_currentAppUserId");
+    _currentMobileUserId = mobileUserId;
+    
+    debugPrint("🎯 Provider Initialized: App=$appUserId Mobile=$mobileUserId");
     notifyListeners(); 
   }
 

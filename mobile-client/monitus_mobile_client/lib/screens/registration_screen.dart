@@ -135,10 +135,17 @@ class _RegistrationScreenState extends State<RegistrationScreen>{
               //Fetch the newly saved dynamic ID straight out of SharedPreferences
               final prefs = await SharedPreferences.getInstance();
               final String? newId = prefs.getString('saved_user_id');
-
+              final String? mobileUserId = prefs.getString('saved_mobile_user_id');
+                  
               //  Inject the true active ID straight into CommunityProvider
-              if (newId != null && context.mounted) {
-                Provider.of<CommunityProvider>(context, listen: false).setCurrentUser(int.parse(newId));
+              if (newId != null && mobileUserId != null && context.mounted) {
+                Provider.of<CommunityProvider>(
+                  context,
+                  listen: false,
+                ).setCurrentUser(
+                  int.parse(newId),
+                  int.parse(mobileUserId),
+                );
               }
 
               if (context.mounted){
