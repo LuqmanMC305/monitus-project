@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    debugPrint("CALLBACK DISPATCHER INITIALISED");
     // This 'taskName' will be "locationUpdateTask"
     if (taskName == "locationUpdateTask") {
       try {
@@ -16,7 +17,10 @@ void callbackDispatcher() {
         final prefs = await SharedPreferences.getInstance();
         await prefs.reload(); // Ensures background isolate sees the newest login
         
-        final String? savedUserId = prefs.getString('saved_user_id');
+        final String? savedUserId = prefs.getString('saved_app_user_id');
+
+        debugPrint("BACKGROUND TASK STARTED");
+        debugPrint("BACKGROUND USER ID: $savedUserId");
 
         // 2. GUARD CLAUSE: Stop if no user or "0" is found
         if (savedUserId == null || savedUserId == "0" || savedUserId.isEmpty) {
