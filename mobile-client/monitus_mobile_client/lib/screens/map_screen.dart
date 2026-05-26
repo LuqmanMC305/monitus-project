@@ -133,9 +133,9 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
                       onTap: () => _showAlertDetails(alert),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2),
-                          //shape: BoxShape.circle,
-                          //border: Border.all(color: _getSeverityColor(alert['alert_type']), width: 2),
+                          color: Colors.black.withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
+                          // border: Border.all(color: _getSeverityColor(alert['alert_type']), width: 2),
                         ),
                         alignment: Alignment.center,
                         child: Text(
