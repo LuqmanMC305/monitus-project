@@ -111,22 +111,28 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
               MarkerLayer(
                 markers: snapshot.data!.map((alert) {
-
                   // Determine marker location based on geometry type
                   LatLng anchorPoint;
                   if (alert['area_type'] == 'polygon') {
                     List<LatLng> coords = _parsePolygon(alert['danger_zone_coordinates']);
-                    anchorPoint = coords.isNotEmpty ? coords.first : LatLng(0, 0);
+                    anchorPoint = _getPolygonCentroid(coords);
                   } else {
-                    anchorPoint = LatLng(alert['latitude'] ?? 0.0, alert['longitude'] ?? 0.0);
+                    anchorPoint = LatLng(
+                      double.tryParse(alert['latitude']?.toString() ?? '0.0') ?? 0.0, 
+                      double.tryParse(alert['longitude']?.toString() ?? '0.0') ?? 0.0
+                    );
                   }
 
-                  // Only draw if we have a valid point
-                  if (anchorPoint.latitude == 0 && anchorPoint.longitude == 0) 
-                    return Marker(point: LatLng(0,0), child: SizedBox());
+                  //  Filter out corrupted or uninitialised boundary nodes gracefully
+                  if (anchorPoint.latitude == 0.0 && anchorPoint.longitude == 0.0) {
+                    return const Marker(
+                      point: LatLng(0, 0), 
+                      child: SizedBox.shrink()
+                    );
+                  }
 
                   return Marker(
-                    point: LatLng(alert['latitude'], alert['longitude']),
+                    point: anchorPoint,
                     width: 45,
                     height: 45,
                     child: GestureDetector(
@@ -260,6 +266,22 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
       },
     );
   }
+
+    // Compute the centroid of a polygon alert 
+    LatLng _getPolygonCentroid(List<LatLng> points) {
+      if (points.isEmpty) return const LatLng(0, 0);
+
+      double totalLat = 0.0;
+      double totalLng = 0.0;
+
+      for (var point in points) {
+        totalLat += point.latitude;
+        totalLng += point.longitude;
+      }
+
+      // Dividing by n (points.length) to find the average
+      return LatLng(totalLat / points.length, totalLng / points.length);
+    }
 
     // Refresh Map Data Method
     void _refreshMapData() {
