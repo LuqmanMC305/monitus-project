@@ -279,7 +279,7 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
         totalLng += point.longitude;
       }
 
-      // Dividing by n (points.length) to find the average
+      // Dividing by n (points.length) to find the average. For example, triangle = 3 points
       return LatLng(totalLat / points.length, totalLng / points.length);
     }
 
