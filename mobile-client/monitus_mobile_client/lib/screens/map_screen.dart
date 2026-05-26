@@ -190,29 +190,72 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
   // Method to show alert details
   void _showAlertDetails(Map<String, dynamic> alert) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      barrierDismissible: true, // Allows users to tap outside the card to close it
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                alert['title'] ?? 'Incident Details',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(alert['translated_body'] ?? alert['body'] ?? 'No details provided.'),
-              const SizedBox(height: 20),
-              Text("Reported at: ${alert['received_at']}", 
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
-            ],
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // Uniform rounded card styling
           ),
+          icon: Text(
+            alert['category_icon'] ?? '📢',
+            style: const TextStyle(fontSize: 32),
+          ),
+          title: Text(
+            alert['title'] ?? 'Incident Details',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Display Severity Label with matching badge color
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Severity: ${(alert['alert_type'] ?? 'LOW').toString().toUpperCase()}",
+                    style: TextStyle(
+                      color: _getSeverityColor(alert['alert_type']),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Main Instruction Body
+                Text(
+                  alert['translated_body'] ?? alert['body'] ?? 'No details provided.',
+                  style: const TextStyle(fontSize: 15, height: 1.4),
+                ),
+                const SizedBox(height: 20),
+                const Divider(),
+                const SizedBox(height: 8),
+                
+                // Timestamp
+                Text(
+                  "Reported at: ${alert['received_at']}",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                "Dismiss",
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         );
       },
     );
