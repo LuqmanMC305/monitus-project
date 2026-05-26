@@ -93,6 +93,11 @@ class FirebaseMessagingService{
             'translated_body': translatedText, 
             'language_code': targetLang,
             'alert_type': message.data['alert_type'] ?? 'general',
+
+            'area_type': message.data['area_type'] ?? 'radius',
+            'category_icon': message.data['category_icon'] ?? '📢',
+            'danger_zone_coordinates': message.data['danger_zone_coordinates'] ?? '',
+
             'latitude': double.tryParse(message.data['latitude']?.toString() ?? '') ?? 0.0,
             'longitude': double.tryParse(message.data['longitude']?.toString() ?? '') ?? 0.0,
             'radius': double.tryParse(message.data['radius']?.toString() ?? '') ?? 500.00,

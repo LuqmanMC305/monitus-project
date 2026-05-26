@@ -5,6 +5,7 @@ import '../services/database_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/registration_service.dart';
 import '../services/alert_notifier.dart';
+import 'dart:convert';
 
 
 class AlertMapScreen extends StatefulWidget {
@@ -43,6 +44,21 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
     }
   }
 
+  // Helper method to decode the JSON array safely
+  List<LatLng> _parsePolygon(String? jsonString) {
+    if (jsonString == null || jsonString.isEmpty) return [];
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      return decoded.map((point) => LatLng(
+        double.parse(point[0].toString()), 
+        double.parse(point[1].toString())
+      )).toList();
+    } catch (e) {
+      debugPrint("Error parsing polygon: $e");
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Wrap the FutureBuilder in a Scaffold so we can add the FloatingActionButton
@@ -52,10 +68,6 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-          // ... Your existing logic for alertsWithGeo and debugPrints ...
-          final alertsWithGeo = snapshot.data!.where((alert) => 
-            (alert['latitude'] ?? 0.0) != 0.0 && (alert['longitude'] ?? 0.0) != 0.0
-          ).toList();
 
           return FlutterMap(
             mapController: _mapController,
@@ -69,10 +81,12 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.monitus.app',
               ),
-              CircleLayer(
-                circles: alertsWithGeo.map((alert) {
+
+              // MODE A: CIRCLE RENDERER
+             CircleLayer(
+                circles: snapshot.data!.where((alert) => alert['area_type'] == 'radius').map((alert) {
                   return CircleMarker(
-                    point: LatLng(alert['latitude'], alert['longitude']),
+                    point: LatLng(alert['latitude'] ?? 0.0, alert['longitude'] ?? 0.0),
                     radius: alert['radius'] ?? 500.0,
                     useRadiusInMeter: true,
                     color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2),
@@ -81,18 +95,53 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
                   );
                 }).toList(),
               ),
+
+              // MODE B: POLYGON RENDERER
+              PolygonLayer(
+                polygons: snapshot.data!.where((alert) => alert['area_type'] == 'polygon').map((alert) {
+                  List<LatLng> coords = _parsePolygon(alert['danger_zone_coordinates']);
+                  return Polygon(
+                    points: coords,
+                    color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2),
+                    borderColor: _getSeverityColor(alert['alert_type']),
+                    borderStrokeWidth: 3,
+                  );
+                }).toList(),
+              ),
+
               MarkerLayer(
-                markers: alertsWithGeo.map((alert) {
+                markers: snapshot.data!.map((alert) {
+
+                  // Determine marker location based on geometry type
+                  LatLng anchorPoint;
+                  if (alert['area_type'] == 'polygon') {
+                    List<LatLng> coords = _parsePolygon(alert['danger_zone_coordinates']);
+                    anchorPoint = coords.isNotEmpty ? coords.first : LatLng(0, 0);
+                  } else {
+                    anchorPoint = LatLng(alert['latitude'] ?? 0.0, alert['longitude'] ?? 0.0);
+                  }
+
+                  // Only draw if we have a valid point
+                  if (anchorPoint.latitude == 0 && anchorPoint.longitude == 0) 
+                    return Marker(point: LatLng(0,0), child: SizedBox());
+
                   return Marker(
                     point: LatLng(alert['latitude'], alert['longitude']),
-                    width: 40,
-                    height: 40,
+                    width: 45,
+                    height: 45,
                     child: GestureDetector(
                       onTap: () => _showAlertDetails(alert),
-                      child: Icon(
-                        alert['alert_type'] == 'emergency' ? Icons.warning : Icons.info, 
-                        color: _getSeverityColor(alert['alert_type']), 
-                        size: 30
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _getSeverityColor(alert['alert_type']).withValues(alpha: 0.2),
+                          //shape: BoxShape.circle,
+                          //border: Border.all(color: _getSeverityColor(alert['alert_type']), width: 2),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          alert['category_icon'] ?? '📢',
+                          style: const TextStyle(fontSize: 22),
+                        )
                       ),
                     )
                   );

@@ -36,7 +36,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade, // Handle the transition
     );
@@ -52,6 +52,9 @@ class DatabaseHelper {
         translated_body TEXT, 
         language_code TEXT,
         alert_type TEXT,
+        area_type TEXT DEFAULT 'radius',           
+        category_icon TEXT DEFAULT '📢',           
+        danger_zone_coordinates TEXT,
         latitude REAL,
         longitude REAL,
         radius REAL,
@@ -142,6 +145,12 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE alerts ADD COLUMN longitude REAL');
       await db.execute('ALTER TABLE alerts ADD COLUMN radius REAL');
       print("Database upgraded to Version 3: Geospatial columns added.");
+    }
+    if(oldVersion < 4){
+      await db.execute("ALTER TABLE alerts ADD COLUMN area_type TEXT DEFAULT 'radius'");
+      await db.execute("ALTER TABLE alerts ADD COLUMN category_icon TEXT DEFAULT '📢'");
+      await db.execute("ALTER TABLE alerts ADD COLUMN danger_zone_coordinates TEXT");
+      debugPrint("Database upgraded to Version 4: Polygon columns added.");
     }
   }
 
