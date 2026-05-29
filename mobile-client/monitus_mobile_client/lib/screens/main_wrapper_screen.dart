@@ -30,6 +30,7 @@ class _MainWrapperState extends State<MainWrapper> {
     const AlertHistoryScreen(), // Index 0 -> History
     const CommunityListScreen(), // Index 1 -> New Community Discovery Screen
     const AlertMapScreen(), // Index 2 -> Map
+    // const RequestAlertScreen(), // Index 3 -> Request Alert Map
   ];
 
   Future<void> _handleLogout() async{
