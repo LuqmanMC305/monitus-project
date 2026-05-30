@@ -5,9 +5,11 @@ import '../services/database_helper.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/registration_service.dart';
 import '../services/alert_notifier.dart';
+import '../services/report_service.dart';
 import 'dart:convert';
-import 'dart:io'; // 🟢 Added for handling File image inputs
-import 'package:image_picker/image_picker.dart'; // 🟢 Make sure to add this package to pubspec.yaml
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io'; 
+import 'package:image_picker/image_picker.dart'; 
 
 class AlertMapScreen extends StatefulWidget {
   const AlertMapScreen({super.key});
@@ -279,24 +281,88 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
                     ElevatedButton(
                       onPressed: () async {
+                        // 1. Validate user text input field
                         if (_descriptionController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please write a small description")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Please write a small description"))
+                          );
                           return;
                         }
-                                                
-                        setState(() {
-                          _isReportingMode = false;
-                          _selectedImage = null;
-                          _descriptionController.clear();
-                        });
-                        Navigator.pop(context);
-                        
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Report forwarded to automated AI triage desk."), backgroundColor: Colors.green),
+
+                        // 2. Display an un-dismissible loading spinner overlay dialog
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(color: Colors.redAccent),
+                          ),
                         );
+
+                        // 🟢 3. ADDED HERE: Read the dynamic user ID from SharedPreferences
+                          final SharedPreferences prefs = await SharedPreferences.getInstance();
+                          final int cachedAppUserId = prefs.getInt('app_user_id') ?? 1;
+
+                          debugPrint('CURRENT APP USER ID: $cachedAppUserId');
+                        
+                        try {
+                          // 3. Trigger your Dio multi-part network submission service handler
+                          // (Using appUserId: 1 as your local sandbox testing context)
+                          bool isSuccess = await ReportService().submitIncidentReport(
+                            appUserId: cachedAppUserId, 
+                            description: _descriptionController.text.trim(),
+                            location: coordinates, // Inherited from the parent bottom sheet scope
+                            imageFile: _selectedImage,
+                          );
+
+                          // 4. Pop the loading spinner out of view immediately after API responds
+                          if (context.mounted) Navigator.pop(context);
+
+                          if (isSuccess) {
+                            // 5. Reset state elements cleanly upon successful upload
+                            setState(() {
+                              _isReportingMode = false;
+                              _selectedImage = null;
+                              _descriptionController.clear();
+                            });
+                            
+                            // 6. Close the bottom modal sheet drawer safely
+                            if (context.mounted) Navigator.pop(context);
+                            
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Report forwarded to automated AI triage desk."), 
+                                backgroundColor: Colors.green
+                              ),
+                            );
+                          } else {
+                            // Handle explicit API failure feedback
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Submission failed. Check backend server connection."), 
+                                  backgroundColor: Colors.redAccent
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          // 7. Failsafe: Ensure spinner closes if a major system exception crashes out
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("An unexpected error occurred: $e"), backgroundColor: Colors.redAccent),
+                            );
+                          }
+                        }
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, padding: const EdgeInsets.symmetric(vertical: 14)),
-                      child: const Text('Submit Emergency Request', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent, 
+                        padding: const EdgeInsets.symmetric(vertical: 14)
+                      ),
+                      child: const Text(
+                        'Submit Emergency Request', 
+                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)
+                      ),
                     ),
                   ],
                 ),
