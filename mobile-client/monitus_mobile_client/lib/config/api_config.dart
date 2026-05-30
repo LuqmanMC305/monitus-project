@@ -33,5 +33,9 @@ class ApiConfig{
 
   static Uri joinCommunity() =>
       Uri.parse('$baseUrl/communities/join');
+
+  // Request Alert
+  static Uri requestAlert() =>
+      Uri.parse('$baseUrl/reports');
   
 }
