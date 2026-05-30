@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io'; 
 import 'package:image_picker/image_picker.dart'; 
+import '../config/storage_keys.dart';
 
 class AlertMapScreen extends StatefulWidget {
   const AlertMapScreen({super.key});
@@ -300,15 +301,21 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
                         // 🟢 3. ADDED HERE: Read the dynamic user ID from SharedPreferences
                           final SharedPreferences prefs = await SharedPreferences.getInstance();
-                          final int cachedAppUserId = prefs.getInt('app_user_id') ?? 1;
+                          final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
 
-                          debugPrint('CURRENT APP USER ID: $cachedAppUserId');
+                          debugPrint('CURRENT APP USER ID STRING: $savedAppUserId');
+                          
+                          // 🟢 2. SAFE PARSING: Convert the String? to an int, falling back to a real database ID
+                          // int.tryParse returns null if the string is corrupted or null, letting us coalesce (??) to a backup integer
+                          final int parsedUserId = int.tryParse(savedAppUserId ?? '') ?? 1; 
+                          
+                          debugPrint('PARSED INT ID FOR DATABASE: $parsedUserId');
                         
                         try {
                           // 3. Trigger your Dio multi-part network submission service handler
                           // (Using appUserId: 1 as your local sandbox testing context)
                           bool isSuccess = await ReportService().submitIncidentReport(
-                            appUserId: cachedAppUserId, 
+                            appUserId: parsedUserId, 
                             description: _descriptionController.text.trim(),
                             location: coordinates, // Inherited from the parent bottom sheet scope
                             imageFile: _selectedImage,

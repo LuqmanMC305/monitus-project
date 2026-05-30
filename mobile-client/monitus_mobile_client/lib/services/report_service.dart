@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../config/api_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../config/storage_keys.dart';
 
 
 class ReportService {
@@ -18,6 +20,14 @@ class ReportService {
     File? imageFile,
   }) async {
     try {
+
+      // Fetch the token dynamically
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(StorageKeys.authToken);
+
+      // DEBUG: Check your console log to ensure your active login token is resolved
+      debugPrint('--- TOKEN IN REPORT SERVICE: $token ---');
+
       // 🟢 Assemble the multi-part data map wrapper
       Map<String, dynamic> formDataMap = {
         'app_user_id': appUserId,
@@ -39,7 +49,23 @@ class ReportService {
 
       // Execute HTTP POST Request to your Laravel API endpoint
       Response response = await _dio.post(ApiConfig.requestAlert().toString(), data: formData);
+      /*
 
+       NEW HTTP POST REQUEST 
+      Response response = await _dio.post(
+        '/reports', 
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+            'ngrok-skip-browser-warning': 'true', // Keeps local Ngrok tunnels happy!
+          },
+        ),
+      );
+      return response.statusCode == 201;
+
+      */
       if (response.statusCode == 201) {
         debugPrint("Server Success Response: ${response.data}");
         return true;
