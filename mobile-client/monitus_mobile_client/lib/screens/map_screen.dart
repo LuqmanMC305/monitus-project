@@ -216,166 +216,162 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
     );
   }
 
-  // 🟢 CROWDSOURCING MODAL SUBMISSION DRAWER FORM SHEET
+  // 🟢 CROWDSOURCING MODAL SUBMISSION 
   void _openReportSubmissionSheet(BuildContext context, LatLng coordinates) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      barrierDismissible: true, // Allows tapping outside to dismiss the form safely
       builder: (BuildContext bc) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                top: 20, left: 20, right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Report Community Incident', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
-                    Text('Coordinates: ${coordinates.latitude.toStringAsFixed(4)}, ${coordinates.longitude.toStringAsFixed(4)}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                    const SizedBox(height: 15),
-                    
-                    TextField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Incident Details',
-                        hintText: 'Describe flash floods, structural damage, fallen roadblocks...',
-                        border: OutlineInputBorder(),
-                      ),
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.all(20), // Standard margin around the dialog box
+          child: Container(
+            // Limits the dialog width on web/desktop view displays so it doesn't stretch out fully
+            constraints: const BoxConstraints(maxWidth: 500), 
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Report Community Incident', 
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    'Coordinates: ${coordinates.latitude.toStringAsFixed(4)}, ${coordinates.longitude.toStringAsFixed(4)}', 
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  const SizedBox(height: 15),
+                  
+                  TextField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Incident Details',
+                      hintText: 'Describe flash floods, structural damage, fallen roadblocks...',
+                      border: OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 15),
+                  ),
+                  const SizedBox(height: 15),
 
-                    // Embedded Image Preview box frame
-                    _selectedImage != null 
+                  // Embedded Image Preview box frame
+                  _selectedImage != null 
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.file(_selectedImage!, height: 150, fit: BoxFit.cover),
                         )
                       : Container(
                           height: 120, 
-                          decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(10), color: Colors.grey.shade50), 
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300), 
+                            borderRadius: BorderRadius.circular(10), 
+                            color: Colors.grey.shade50,
+                          ), 
                           alignment: Alignment.center, 
-                          child: const Text('No Evidence Photo Attached', style: TextStyle(color: Colors.grey))
+                          child: const Text('No Evidence Photo Attached', style: TextStyle(color: Colors.grey)),
                         ),
-                    const SizedBox(height: 8),
-                    
-                    TextButton.icon(
-                      onPressed: () async {
-                        final picker = ImagePicker();
-                        final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-                        if (pickedFile != null) {
-                          setModalState(() {
-                            _selectedImage = File(pickedFile.path);
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.camera_alt, color: Colors.blue),
-                      label: const Text('Capture Live Camera Evidence', style: TextStyle(color: Colors.blue)),
-                    ),
-                    const SizedBox(height: 15),
+                  const SizedBox(height: 8),
+                  
+                  TextButton.icon(
+                    onPressed: () async {
+                      final picker = ImagePicker();
+                      final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                      if (pickedFile != null) {
+                        // 💡 NOTE: Since showDialog doesn't need an outer StatefulBuilder layout context anymore,
+                        // we can call the standard dialog controller state updates cleanly!
+                        (bc as Element).markNeedsBuild(); 
+                        _selectedImage = File(pickedFile.path);
+                      }
+                    },
+                    icon: const Icon(Icons.camera_alt, color: Colors.blue),
+                    label: const Text('Capture Live Camera Evidence', style: TextStyle(color: Colors.blue)),
+                  ),
+                  const SizedBox(height: 15),
 
-                    ElevatedButton(
-                      onPressed: () async {
-                        // 1. Validate user text input field
-                        if (_descriptionController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please write a small description"))
-                          );
-                          return;
-                        }
+                  ElevatedButton(
+                    onPressed: () async {
+                      // 1. Validate user text input field
+                      if (_descriptionController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Please write a small description"))
+                        );
+                        return;
+                      }
 
-                        // 2. Display an un-dismissible loading spinner overlay dialog
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => const Center(
-                            child: CircularProgressIndicator(color: Colors.redAccent),
-                          ),
+                      // 2. Display an un-dismissible loading spinner overlay dialog
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const Center(
+                          child: CircularProgressIndicator(color: Colors.redAccent),
+                        ),
+                      );
+
+                      // 3. Read the dynamic user ID from SharedPreferences
+                      final SharedPreferences prefs = await SharedPreferences.getInstance();
+                      final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
+                      final int parsedUserId = int.tryParse(savedAppUserId ?? '') ?? 1; 
+                      
+                      try {
+                        // 4. Trigger your Dio network submission handler
+                        bool isSuccess = await ReportService().submitIncidentReport(
+                          appUserId: parsedUserId, 
+                          description: _descriptionController.text.trim(),
+                          location: coordinates, 
+                          imageFile: _selectedImage,
                         );
 
-                        // 🟢 3. ADDED HERE: Read the dynamic user ID from SharedPreferences
-                          final SharedPreferences prefs = await SharedPreferences.getInstance();
-                          final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
+                        // 5. Pop the loading spinner immediately after API responds
+                        if (context.mounted) Navigator.pop(context);
 
-                          debugPrint('CURRENT APP USER ID STRING: $savedAppUserId');
+                        if (isSuccess) {
+                          // 6. Reset elements and completely dismiss the custom form box dialog drawer frame
+                          _selectedImage = null;
+                          _descriptionController.clear();
                           
-                          // 🟢 2. SAFE PARSING: Convert the String? to an int, falling back to a real database ID
-                          // int.tryParse returns null if the string is corrupted or null, letting us coalesce (??) to a backup integer
-                          final int parsedUserId = int.tryParse(savedAppUserId ?? '') ?? 1; 
+                          if (context.mounted) Navigator.pop(bc); // Closes the dialog safely
                           
-                          debugPrint('PARSED INT ID FOR DATABASE: $parsedUserId');
-                        
-                        try {
-                          // 3. Trigger your Dio multi-part network submission service handler
-                          // (Using appUserId: 1 as your local sandbox testing context)
-                          bool isSuccess = await ReportService().submitIncidentReport(
-                            appUserId: parsedUserId, 
-                            description: _descriptionController.text.trim(),
-                            location: coordinates, // Inherited from the parent bottom sheet scope
-                            imageFile: _selectedImage,
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Report forwarded to automated AI triage desk."), 
+                              backgroundColor: Colors.green,
+                            ),
                           );
-
-                          // 4. Pop the loading spinner out of view immediately after API responds
-                          if (context.mounted) Navigator.pop(context);
-
-                          if (isSuccess) {
-                            // 5. Reset state elements cleanly upon successful upload
-                            setState(() {
-                              _isReportingMode = false;
-                              _selectedImage = null;
-                              _descriptionController.clear();
-                            });
-                            
-                            // 6. Close the bottom modal sheet drawer safely
-                            if (context.mounted) Navigator.pop(context);
-                            
+                        } else {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Report forwarded to automated AI triage desk."), 
-                                backgroundColor: Colors.green
+                                content: Text("Submission failed. Check backend server connection."), 
+                                backgroundColor: Colors.redAccent,
                               ),
-                            );
-                          } else {
-                            // Handle explicit API failure feedback
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Submission failed. Check backend server connection."), 
-                                  backgroundColor: Colors.redAccent
-                                ),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          // 7. Failsafe: Ensure spinner closes if a major system exception crashes out
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("An unexpected error occurred: $e"), backgroundColor: Colors.redAccent),
                             );
                           }
                         }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent, 
-                        padding: const EdgeInsets.symmetric(vertical: 14)
-                      ),
-                      child: const Text(
-                        'Submit Emergency Request', 
-                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)
-                      ),
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context); // Pops spinner out
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("An unexpected error occurred: $e"), backgroundColor: Colors.redAccent),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent, 
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                  ],
-                ),
+                    child: const Text(
+                      'Submit Emergency Request', 
+                      style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-            );
-          }
+            ),
+          ),
         );
       },
     );
