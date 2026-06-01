@@ -6,7 +6,7 @@ class ApiConfig{
   static String get baseUrl {
     switch (current){
       case Environment.local:
-        return 'http://192.168.0.195/api';
+        return 'https://3w74rbh0xh.sharedwithexpose.com/api';
       
       case Environment.staging:
         return 'https://monitus-laravel-backend-49hltibe.on-forge.com/api';
