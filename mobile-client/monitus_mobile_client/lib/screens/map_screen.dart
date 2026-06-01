@@ -218,164 +218,239 @@ class _AlertMapScreenState extends State<AlertMapScreen> {
 
   // 🟢 CROWDSOURCING MODAL SUBMISSION 
   void _openReportSubmissionSheet(BuildContext context, LatLng coordinates) {
-    showDialog(
-      context: context,
-      barrierDismissible: true, // Allows tapping outside to dismiss the form safely
-      builder: (BuildContext bc) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          insetPadding: const EdgeInsets.all(20), // Standard margin around the dialog box
-          child: Container(
-            // Limits the dialog width on web/desktop view displays so it doesn't stretch out fully
-            constraints: const BoxConstraints(maxWidth: 500), 
-            padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Report Community Incident', 
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    'Coordinates: ${coordinates.latitude.toStringAsFixed(4)}, ${coordinates.longitude.toStringAsFixed(4)}', 
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                  const SizedBox(height: 15),
-                  
-                  TextField(
-                    controller: _descriptionController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Incident Details',
-                      hintText: 'Describe flash floods, structural damage, fallen roadblocks...',
-                      border: OutlineInputBorder(),
+  // State variables for the dialog
+  ImageSource _selectedSource = ImageSource.camera; // Default to camera
+  File? _localSelectedImage; // Renamed from _selectedImage to avoid confusion
+  final TextEditingController _localDescriptionController = TextEditingController();
+  
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext bc) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            insetPadding: const EdgeInsets.all(20),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Report Community Incident',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const SizedBox(height: 15),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Coordinates: ${coordinates.latitude.toStringAsFixed(4)}, ${coordinates.longitude.toStringAsFixed(4)}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                    const SizedBox(height: 15),
 
-                  // Embedded Image Preview box frame
-                  _selectedImage != null 
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(_selectedImage!, height: 150, fit: BoxFit.cover),
-                        )
-                      : Container(
-                          height: 120, 
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300), 
-                            borderRadius: BorderRadius.circular(10), 
-                            color: Colors.grey.shade50,
-                          ), 
-                          alignment: Alignment.center, 
-                          child: const Text('No Evidence Photo Attached', style: TextStyle(color: Colors.grey)),
+                    TextField(
+                      controller: _localDescriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Incident Details',
+                        hintText: 'Describe flash floods, structural damage, fallen roadblocks...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+
+                    // Toggle Switch Section
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Image Source:',
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.camera_alt, size: 18, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              Switch(
+                                value: _selectedSource == ImageSource.gallery,
+                                onChanged: (bool value) {
+                                  setDialogState(() {
+                                    _selectedSource = value ? ImageSource.gallery : ImageSource.camera;
+                                    // Clear selected image when switching sources to avoid confusion
+                                    _localSelectedImage = null;
+                                  });
+                                },
+                                activeThumbColor: Colors.blue,
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.photo_library, size: 18, color: Colors.blue),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Indicate current source
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        _selectedSource == ImageSource.camera 
+                            ? '📸 Will open camera' 
+                            : '🖼️ Will open gallery',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
                         ),
-                  const SizedBox(height: 8),
-                  
-                  TextButton.icon(
-                    onPressed: () async {
-                      final picker = ImagePicker();
-                      final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-                      if (pickedFile != null) {
-                        // 💡 NOTE: Since showDialog doesn't need an outer StatefulBuilder layout context anymore,
-                        // we can call the standard dialog controller state updates cleanly!
-                        (bc as Element).markNeedsBuild(); 
-                        _selectedImage = File(pickedFile.path);
-                      }
-                    },
-                    icon: const Icon(Icons.camera_alt, color: Colors.blue),
-                    label: const Text('Capture Live Camera Evidence', style: TextStyle(color: Colors.blue)),
-                  ),
-                  const SizedBox(height: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
-                  ElevatedButton(
-                    onPressed: () async {
-                      // 1. Validate user text input field
-                      if (_descriptionController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Please write a small description"))
-                        );
-                        return;
-                      }
-
-                      // 2. Display an un-dismissible loading spinner overlay dialog
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => const Center(
-                          child: CircularProgressIndicator(color: Colors.redAccent),
-                        ),
-                      );
-
-                      // 3. Read the dynamic user ID from SharedPreferences
-                      final SharedPreferences prefs = await SharedPreferences.getInstance();
-                      final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
-                      final int parsedUserId = int.tryParse(savedAppUserId ?? '') ?? 1; 
-                      
-                      try {
-                        // 4. Trigger your Dio network submission handler
-                        bool isSuccess = await ReportService().submitIncidentReport(
-                          appUserId: parsedUserId, 
-                          description: _descriptionController.text.trim(),
-                          location: coordinates, 
-                          imageFile: _selectedImage,
-                        );
-
-                        // 5. Pop the loading spinner immediately after API responds
-                        if (context.mounted) Navigator.pop(context);
-
-                        if (isSuccess) {
-                          // 6. Reset elements and completely dismiss the custom form box dialog drawer frame
-                          _selectedImage = null;
-                          _descriptionController.clear();
-                          
-                          if (context.mounted) Navigator.pop(bc); // Closes the dialog safely
-                          
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Report forwarded to automated AI triage desk."), 
-                              backgroundColor: Colors.green,
+                    // Image Preview
+                    _localSelectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(_localSelectedImage!, height: 150, fit: BoxFit.cover),
+                          )
+                        : Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.grey.shade50,
                             ),
+                            alignment: Alignment.center,
+                            child: const Text('No Evidence Photo Attached', style: TextStyle(color: Colors.grey)),
+                          ),
+                    const SizedBox(height: 8),
+
+                    // Button that changes based on selected source
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final picker = ImagePicker();
+                        final pickedFile = await picker.pickImage(
+                          source: _selectedSource, // Dynamic source based on toggle
+                          imageQuality: 70,
+                        );
+                        if (pickedFile != null) {
+                          setDialogState(() {
+                            _localSelectedImage = File(pickedFile.path);
+                          });
+                        }
+                      },
+                      icon: Icon(
+                        _selectedSource == ImageSource.camera ? Icons.camera_alt : Icons.photo_library,
+                        color: Colors.blue,
+                      ),
+                      label: Text(
+                        _selectedSource == ImageSource.camera 
+                            ? 'Capture Live Camera Evidence' 
+                            : 'Select from Gallery',
+                        style: const TextStyle(color: Colors.blue),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        side: BorderSide(color: Colors.blue.shade100),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_localDescriptionController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Please write a small description"))
                           );
-                        } else {
-                          if (context.mounted) {
+                          return;
+                        }
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(color: Colors.redAccent),
+                          ),
+                        );
+
+                        final SharedPreferences prefs = await SharedPreferences.getInstance();
+                        final String? savedAppUserId = prefs.getString(StorageKeys.appUserId);
+                        final int parsedUserId = int.tryParse(savedAppUserId ?? '') ?? 1;
+
+                        try {
+                          bool isSuccess = await ReportService().submitIncidentReport(
+                            appUserId: parsedUserId,
+                            description: _localDescriptionController.text.trim(),
+                            location: coordinates,
+                            imageFile: _localSelectedImage,
+                          );
+
+                          if (context.mounted) Navigator.pop(context);
+
+                          if (isSuccess) {
+                            setDialogState(() {
+                              _localSelectedImage = null;
+                              _localDescriptionController.clear();
+                            });
+                            
+                            if (context.mounted) Navigator.pop(bc);
+                            
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Submission failed. Check backend server connection."), 
-                                backgroundColor: Colors.redAccent,
+                                content: Text("Report forwarded to automated AI triage desk."),
+                                backgroundColor: Colors.green,
                               ),
+                            );
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Submission failed. Check backend server connection."),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("An unexpected error occurred: $e"), backgroundColor: Colors.redAccent),
                             );
                           }
                         }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.pop(context); // Pops spinner out
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("An unexpected error occurred: $e"), backgroundColor: Colors.redAccent),
-                          );
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent, 
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text(
+                        'Submit Emergency Request',
+                        style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    child: const Text(
-                      'Submit Emergency Request', 
-                      style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
-    );
-  }
+          );
+        },
+      );
+    },
+  );
+}
 
   Color _getSeverityColor(String? type) {
     switch (type?.toLowerCase()) {
