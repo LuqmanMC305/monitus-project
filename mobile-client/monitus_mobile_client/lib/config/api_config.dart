@@ -1,7 +1,7 @@
 enum Environment{ local, staging }
 
 class ApiConfig{
-  static Environment current = Environment.local;
+  static Environment current = Environment.staging;
 
   static String get baseUrl {
     switch (current){

@@ -19,7 +19,7 @@ import 'screens/registration_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  ApiConfig.current = Environment.local;
+  ApiConfig.current = Environment.staging;
 
   // 1. Initialise Core Cloud Engine infrastructure 
   try {
