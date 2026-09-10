@@ -244,16 +244,6 @@ Ensure Firebase is configured for the mobile app and that the app is initialized
 - Laravel handles backend logic, database access, and webhook/notification tasks.
 - Firebase and Telegram are used for real-time communication.
 
-## Challenges Addressed
-
-This system addresses several key issues in emergency communication:
-
-- delayed or missing alerts,
-- poor local awareness,
-- limited community coordination,
-- lack of a centralized system for alert tracking,
-- difficulty in reaching affected users based on their location.
-
 ## Future Improvements
 
 Possible enhancements include:
@@ -266,9 +256,7 @@ Possible enhancements include:
 - improved offline notification handling,
 - support for additional emergency categories and reporting modules.
 
-
 ## License
-
 This project is intended for academic, research, and collaborative development use within the scope of the FYP project.
-```
+
 
