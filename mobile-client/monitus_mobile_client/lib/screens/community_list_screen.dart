@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/community_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
 class CommunityListScreen extends StatefulWidget {
   const CommunityListScreen({super.key});
 
@@ -33,14 +34,19 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
           if (provider.communities.isEmpty) {
             return const Center(child: Text('No communities found nearby.'));
           }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: provider.communities.length,
-            itemBuilder: (context, index) {
-              final community = provider.communities[index];
-              return _buildCommunityCard(context, provider, community);
-            },
+          
+          return RefreshIndicator(
+            onRefresh: () async{
+              await provider.loadCommunities();
+              },
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: provider.communities.length,
+                itemBuilder: (context, index) {
+                  final community = provider.communities[index];
+                  return _buildCommunityCard(context, provider, community);
+              },
+            ),
           );
         },
       ),
@@ -50,22 +56,44 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
   Widget _buildCommunityCard(BuildContext context, CommunityProvider provider, dynamic community) {
     // 1. Access the list of users associated with this community
     final List mobileUsers = community['mobile_users'] ?? [];
-
     String status = 'none';
-    if(mobileUsers.isNotEmpty){
-        // SUCCESS: Reach into the first user object to find the pivot data
-        // Laravel nests it as: mobile_users -> [0] -> pivot -> status
-        status = mobileUsers[0]['pivot']?['status'] ?? 'none';
-    }
-    
 
+    if (mobileUsers.isNotEmpty) {
+      // DYNAMIC FIX: Ask the provider for the true logged-in user ID
+      final int? currentUserId = provider.currentMobileUserId;
+
+      // Check what the provider thinks  active user ID is
+      debugPrint("Active User ID in Provider: $currentUserId");
+
+      final myRecord = mobileUsers.firstWhere(
+        (user) {
+
+          //DEFENSIVE CHECK: Read the ID from the top level OR the nested pivot layer
+          final int? topLevelId = user['mobile_user_id'];
+          final int? pivotLevelId = user['pivot']?['mobile_user_id'];
+
+          return topLevelId == currentUserId || pivotLevelId == currentUserId;
+        },
+        orElse: () => null,
+      );
+
+      if (myRecord != null) {
+
+        debugPrint("SUCCESS: Your record was found! Raw User Data: $myRecord");
+        status = myRecord['pivot']?['status'] ?? 'none';
+
+        debugPrint("Extracted Status Value: $status");
+      }
+      
+  }
+    
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(community['community_name'], style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(community['community_description'] ?? 'Stay updated with local alerts.'),
-        trailing: _buildStatusButton(context, provider, community['community_id'], status),
+        trailing: _buildStatusButton(context, provider, community, status),
       ),
     );
   }
@@ -80,7 +108,10 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       return ElevatedButton.icon(
         onPressed: () => _launchTelegram(telegramLink),
         icon: const Icon(Icons.telegram, color: Colors.white),
-        label: const Text('Join Channel'),
+        label: const Text(
+          'Join Channel',
+           style: TextStyle(color: Colors.black)
+          ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue, 
         ),
@@ -88,7 +119,14 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
     } else if (status == 'pending') {
       return const Chip(
         label: Text('Pending'), 
-        backgroundColor: Colors.amber);
+        backgroundColor: Colors.amber,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(20)
+          ),
+          side: BorderSide.none,
+        )
+      );
     } else {
       return ElevatedButton(
         onPressed: () async {
@@ -110,6 +148,7 @@ class _CommunityListScreenState extends State<CommunityListScreen> {
       if (urlString == null || urlString.isEmpty) return;
 
       final Uri url = Uri.parse(urlString);
+
       // Uses url_launcher package to securely bounce execution to the native Telegram app
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);

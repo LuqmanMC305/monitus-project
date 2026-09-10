@@ -103,7 +103,7 @@ class AlertHistoryScreen extends StatefulWidget {
 
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: _getAlertIcon(alert['alert_type']),
+                  leading: _getAlertIcon(alert['alert_type'], alert['category_icon']),
                   title: Text(
                     alert['title'],
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
@@ -172,19 +172,11 @@ class AlertHistoryScreen extends StatefulWidget {
   }
   
   // Helper function to pick the icon based on 'alert_type' (WILL CUSTOMISE ALERTS LATER)
-  Widget _getAlertIcon(String? type) {
+  Widget _getAlertIcon(String? type, String? icon) {
     IconData iconData = Icons.notifications;
     Color bgColour;
 
     switch (type) {
-      /*
-      case 'flood_warning': // WILL CONSIDER THIS SOON FOR ALERT ICON TYPES
-        iconData = Icons.water_drop; 
-        break;
-      case 'emergency': // WILL CONSIDER THIS SOON FOR ALERT ICON TYPES
-        iconData = Icons.warning;
-        break;
-      */
       case 'HIGH':
         bgColour = Color(0xFFF44336); // Red
         break;
@@ -196,6 +188,27 @@ class AlertHistoryScreen extends StatefulWidget {
         break;  
       default:
         bgColour = Colors.black;
+        break;  
+    }
+
+    switch (icon) {
+      case '🌊': 
+        iconData = Icons.flood; 
+        break;
+      case '⚡': 
+        iconData = Icons.thunderstorm;
+        break;
+      case '🔥': 
+        iconData = Icons.local_fire_department;
+        break;
+      case '🚨': 
+        iconData = Icons.emergency;
+        break;
+      case '⛰️': 
+        iconData = Icons.landslide;
+        break;
+      default:
+        iconData = Icons.campaign;
         break;  
     }
     return CircleAvatar(

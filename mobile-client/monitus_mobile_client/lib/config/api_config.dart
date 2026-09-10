@@ -1,12 +1,12 @@
 enum Environment{ local, staging }
 
 class ApiConfig{
-  static Environment current = Environment.local;
+  static Environment current = Environment.staging;
 
   static String get baseUrl {
     switch (current){
       case Environment.local:
-        return 'https://adria-vexatious-unrigidly.ngrok-free.dev/api';
+        return 'http://192.168.0.195:8000/api';
       
       case Environment.staging:
         return 'https://monitus-laravel-backend-49hltibe.on-forge.com/api';
@@ -33,5 +33,9 @@ class ApiConfig{
 
   static Uri joinCommunity() =>
       Uri.parse('$baseUrl/communities/join');
+
+  // Request Alert
+  static Uri requestAlert() =>
+      Uri.parse('$baseUrl/reports');
   
 }
